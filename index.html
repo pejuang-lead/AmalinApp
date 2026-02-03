@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- PWA Manifest & Theme Color -->
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <title>Amalin App v2.3</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+  <style>
+    /* --- CONFIG TEMA (CSS Variables untuk Dynamic Theme) --- */
+    :root {
+      --primary-main: #a855f7; /* Default Purple */
+      --primary-sub: #10b981;  /* Default Green */
+      --app-gradient: linear-gradient(135deg, #9333ea 0%, #d8b4fe 100%);
+      --bg-dark: #020617;
+      --card-bg: rgba(30, 27, 75, 0.75);
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .swal2-container { z-index: 20000 !important; }
+    .swal2-input { color: #fff !important; background: #1e293b !important; border-color: #475569 !important; }
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+    /* --- GLASSMORPHISM & ANIMATION --- */
+    .blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; animation: float 10s infinite alternate ease-in-out; }
+    .blob-one { top: -10%; left: -10%; width: 300px; height: 300px; background: var(--primary-main); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; opacity: 0.4; }
+    .blob-two { bottom: -10%; right: -10%; width: 350px; height: 350px; background: var(--primary-sub); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation-delay: -5s; opacity: 0.4; }
+    @keyframes float { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(30px, 50px) rotate(20deg); } }
+    .glass-panel { background: rgba(17, 25, 40, 0.7); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.125); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    .input-modern { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 500; backdrop-filter: blur(4px); }
+    .input-modern:focus { border-color: var(--primary-main); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1); outline: none; }
+
+    /* --- COMPONENTS --- */
+    .glass-card { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.25rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.3); }
+    .app-card { border-radius: 1.25rem; padding: 1rem; transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
+    .gradient-text { background: var(--app-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+    .habit-item { display: flex; align-items: center; padding: 1rem; border-radius: 1rem; background: #1e1b4b; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; cursor: pointer; min-height: 60px; }
+    .habit-item:active { transform: scale(0.98); background: rgba(30, 27, 75, 0.9); }
+    .habit-item.completed { background: #064e3b; border-color: var(--primary-sub); }
+    .bottom-nav { position: fixed; bottom: 1.25rem; left: 1rem; right: 1rem; max-width: 480px; margin: 0 auto; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 1.5rem; display: flex; justify-content: space-around; align-items: center; padding: 0.75rem 0.5rem; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5); }
+    .nav-btn { color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 600; flex: 1; transition: all 0.2s; padding: 4px 0; }
+    .nav-btn.active { color: var(--primary-main); transform: translateY(-2px); }
+    .section { display: none; padding-bottom: 7rem; }
+    .section.active { display: block; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .progress-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 1rem; background: #0f172a; padding-bottom: 5px; }
+    .progress-table { width: 100%; min-width: 380px; border-collapse: collapse; table-layout: fixed; }
+    .progress-table th { padding: 0.8rem 0.25rem; font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: center; font-weight: 700; }
+    .progress-table td { padding: 0.7rem 0.25rem; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .check-box { width: 26px; height: 26px; border-radius: 8px; border: 2px solid #334155; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .check-box.checked { background: var(--primary-sub); border-color: var(--primary-sub); color: white; }
+    .card-select { background-color: #020617 !important; color: #ffffff !important; border: 2px solid var(--primary-main) !important; font-weight: 700 !important; outline: none; padding: 0.75rem 1rem; border-radius: 1rem; appearance: none; text-align: center; width: 100%; font-size: 0.9rem; }
+    .mini-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .stat-card { padding: 1rem; border-radius: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; }
+    .stat-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim); letter-spacing: 0.05em; }
+    .stat-value { font-size: 1.25rem; font-weight: 800; color: #fff; line-height: 1.2; }
+    .prayer-times-scroll { display: flex; justify-content: space-between; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; }
+    .prayer-time-item { flex: 1; min-width: 60px; text-align: center; padding: 0.5rem 0.25rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.03); }
+    .prayer-label { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 2px; }
+    .prayer-time { font-size: 0.8rem; font-weight: 800; color: #fff; }
+    .mood-btn { font-size: 1.75rem; padding: 0.75rem; border-radius: 1rem; border: 2px solid transparent; transition: all 0.2s; cursor: pointer; background: rgba(255,255,255,0.03); }
+    .mood-btn.active { background: rgba(255, 255, 255, 0.1); border-color: var(--primary-main); transform: scale(1.05); }
+    .mini-progress-bg { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin-top: 8px; }
+    .mini-progress-bar { height: 100%; border-radius: 10px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+    .planner-card { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 1.5rem; padding: 1.5rem; }
+    .range-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 10px; background: rgba(255, 255, 255, 0.15); outline: none; margin: 1rem 0; }
+    .range-slider::-webkit-slider-thumb { appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--primary-main); cursor: pointer; box-shadow: 0 0 15px rgba(168, 85, 247, 0.6); transition: transform 0.1s; }
+    .range-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+    .input-field { background: #1e1b4b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 1rem; font-size: 0.95rem; color: white; outline: none; width: 100%; transition: border-color 0.2s; }
+    .input-field:focus { border-color: var(--primary-main); }
+    .btn-primary { background: var(--primary-main); color: white; padding: 1rem; border-radius: 1rem; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; width: 100%; border: none; cursor: pointer; letter-spacing: 0.05em; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-main); }
+    .report-log-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; text-align: center; }
+    .report-tab-btn { transition: all 0.3s ease; border-radius: 0.75rem; color: #94a3b8; font-weight: 700; font-size: 0.75rem; }
+    .report-tab-btn.active { background: var(--primary-main); color: white !important; shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .step-badge { width: 22px; height: 22px; border-radius: 50%; background: var(--primary-main); color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; margin-right: 8px; flex-shrink: 0; }
+    .deco-circle { position: absolute; z-index: -1; filter: blur(90px); border-radius: 50%; opacity: 0.15; pointer-events: none; }
+    .juz-tile { background: #1e1b4b; border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 0.85rem; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s; cursor: pointer; min-height: 64px; }
+    .juz-tile:active { transform: scale(0.97); background: rgba(30, 27, 75, 0.9); }
+    .juz-checkbox { width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid #475569; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .juz-tile.checked .juz-checkbox { background: var(--primary-sub); border-color: var(--primary-sub); color: white; }
+    .juz-tile.checked .juz-text { color: white; font-weight: 700; }
+    .juz-text { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
+    .quran-tab-btn { position: relative; padding-bottom: 0.85rem; color: var(--text-dim); font-weight: 600; font-size: 0.75rem; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+    .quran-tab-btn.active { color: var(--primary-main); font-weight: 800; }
+    .quran-tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 10%; width: 80%; height: 4px; background: var(--primary-main); border-radius: 4px 4px 0 0; box-shadow: 0 -2px 10px var(--primary-main); }
+    .manual-select { background-color: #1e1b4b; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.85rem 1rem; border-radius: 1rem; width: 100%; outline: none; font-size: 0.9rem; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
+    .manual-select option { background-color: #020617; color: white; padding: 10px; }
+    .dua-card-list { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.25rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+    .dua-card-list::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary-main); border-radius: 4px 0 0 4px; }
+    
+    /* ADZAN TOGGLE */
+    .adzan-toggle { width: 36px; height: 20px; background: #334155; border-radius: 20px; position: relative; cursor: pointer; transition: background 0.3s; }
+    .adzan-toggle.active { background: var(--primary-main); }
+    .adzan-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .adzan-toggle.active::after { transform: translateX(16px); }
+
+    /* GOAL TYPE TOGGLE */
+    .goal-type-btn { background-color: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.2); color: #94a3b8; transition: all 0.2s; }
+    .goal-type-btn.active { background-color: var(--primary-main); color: white; border-color: var(--primary-main); box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+    .modal-content { background: #1e1b4b; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 380px; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(0.95); opacity: 0; transition: all 0.3s; }
+    .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+
+    .dua-tab-btn { position: relative; padding-bottom: 0.85rem; color: var(--text-dim); font-weight: 600; font-size: 0.75rem; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; flex: 1; text-align: center; }
+    .dua-tab-btn.active { color: var(--primary-sub); font-weight: 800; }
+    .dua-tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 15%; width: 70%; height: 4px; background: var(--primary-sub); border-radius: 4px 4px 0 0; box-shadow: 0 -2px 10px var(--primary-sub); }
+
+    /* --- THEME SELECTOR (UPDATED) --- */
+    .theme-btn { 
+        width: 48px; /* Ukuran diperkecil */
+        height: 48px; 
+        border-radius: 50%; 
+        position: relative; 
+        cursor: pointer; 
+        border: 2px solid transparent; 
+        transition: transform 0.2s; 
+        margin: 0 auto; /* Tengah di grid */
+    }
+    .theme-btn.selected { border-color: white; transform: scale(1.15); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+    .theme-preview { position: absolute; inset: 2px; border-radius: 50%; background: var(--theme-bg); overflow: hidden; }
+    .theme-preview::after { content: ''; position: absolute; bottom: 0; right: 0; width: 50%; height: 50%; background: var(--theme-accent); border-radius: 100% 0 0 0; }
+
+    /* --- ACHIEVEMENT BADGES --- */
+    .badge-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 1rem; text-align: center; transition: all 0.3s; opacity: 0.5; filter: grayscale(1); }
+    .badge-card.unlocked { opacity: 1; filter: grayscale(0); background: rgba(255,255,255,0.07); border-color: var(--primary-main); box-shadow: 0 4px 20px -5px rgba(0,0,0,0.3); }
+    .badge-icon { font-size: 2rem; margin-bottom: 0.5rem; display: inline-block; animation: bounce 2s infinite; }
+    .badge-card:not(.unlocked) .badge-icon { animation: none; }
+    .badge-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: white; letter-spacing: 0.05em; }
+    .badge-desc { font-size: 0.55rem; color: #94a3b8; margin-top: 2px; }
+
+    /* --- SHARE CARD CANVAS STYLES --- */
+    #share-card-wrapper { position: fixed; top: -9999px; left: -9999px; pointer-events: none; }
+    .share-card-canvas { width: 420px; min-height: 800px; height: auto; background: linear-gradient(180deg, #020617 0%, #1e1b4b 100%); padding: 32px; color: white; display: flex; flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden; z-index: 1; }
+    .sc-blob { position: absolute; filter: blur(80px); z-index: 0; opacity: 0.3; }
+    .sc-blob-1 { width: 300px; height: 300px; background: var(--primary-main); top: -100px; left: -100px; border-radius: 50%; }
+    .sc-blob-2 { width: 350px; height: 350px; background: var(--primary-sub); bottom: -100px; right: -100px; border-radius: 50%; }
+    .sc-content { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; gap: 1.2rem; flex: 1; }
+    .sc-card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    .sc-user-header { text-align: center; margin-bottom: 8px; }
+    .sc-user-name { font-size: 28px; font-weight: 800; color: white; margin-bottom: 4px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); line-height: 1.2; }
+    .sc-date-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.1em; }
+    .sc-fasting-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+    .sc-fasting-icon { width: 24px; height: 24px; color: #34d399; }
+    .sc-fasting-text { font-size: 14px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sc-section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; margin-bottom: 12px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
+    .sc-section-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+    .sc-wajib-grid { display: flex; justify-content: space-between; padding: 4px 0; }
+    .sc-wajib-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .sc-wajib-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #64748b; font-weight: 800; }
+    .sc-wajib-icon.done { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-color: #34d399; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    .sc-wajib-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
+    .sc-grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .sc-list-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+    .sc-list-item.done { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+    .sc-list-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #475569; display: flex; align-items: center; justify-content: center; font-size: 12px; color: transparent; flex-shrink: 0; }
+    .sc-list-item.done .sc-list-check { background: var(--primary-main); border-color: var(--primary-main); color: white; }
+    .sc-list-text { font-size: 11px; font-weight: 600; color: #cbd5e1; line-height: 1.2; }
+    .sc-list-item.done .sc-list-text { color: white; }
+    .sc-stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sc-stat-label { font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; }
+    .sc-stat-val { font-size: 12px; font-weight: 800; color: white; }
+    .sc-progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+    .sc-progress-fill { height: 100%; background: var(--app-gradient); border-radius: 10px; }
+    .sc-footer { margin-top: auto; padding-top: 24px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sc-app-brand { font-size: 18px; font-weight: 900; color: white; letter-spacing: 0.05em; margin-bottom: 4px; display: block; }
+    .sc-app-tagline { font-size: 11px; font-weight: 500; color: #94a3b8; letter-spacing: 0.2em; text-transform: uppercase; display: block; }
+  </style>
+</head>
+<body class="pb-32 text-white">
+
+  <!-- Audio Element for Adzan - REAL SOUND -->
+  <audio id="adzan-audio" src="https://www.islamcan.com/audio/adzan/azan1.mp3" preload="auto"></audio>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen" class="fixed inset-0 z-[2000] bg-[#020617] flex items-center justify-center p-4 overflow-hidden">
+    <div class="blob blob-one"></div><div class="blob blob-two"></div>
+    <div class="glass-panel w-full max-w-sm p-8 relative z-10 flex flex-col items-center text-center space-y-6">
+        <div class="space-y-2 mb-2">
+            <div class="text-6xl animate-bounce mb-2">🌙</div>
+            <h1 class="text-4xl font-extrabold tracking-tighter uppercase leading-none drop-shadow-2xl" style="font-family: 'Poppins', sans-serif;">
+              <span class="text-white" style="-webkit-text-stroke: 6px var(--primary-main); paint-order: stroke fill;">Amalin</span><span class="text-pink-500" style="-webkit-text-stroke: 6px white; paint-order: stroke fill;">App</span>
+            </h1>
+            <p class="text-slate-300 text-xs font-bold uppercase tracking-[0.2em] mt-2">Niatin, Jalanin, Konsisten</p>
+        </div>
+        <div class="w-full space-y-4">
+            <div id="auth-form-container" class="space-y-4">
+                <div id="field-name-container" class="hidden opacity-0 transition-all duration-300">
+                    <div class="relative group"><div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors"><i data-lucide="user" class="w-5 h-5"></i></div><input type="text" id="auth-name" class="input-modern w-full py-4 pl-12 pr-4 text-sm" placeholder="Nama Panggilan"></div>
+                </div>
+                <div class="relative group"><div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></div><input type="email" id="auth-email" class="input-modern w-full py-4 pl-12 pr-4 text-sm" placeholder="Email Kamu"></div>
+                <div class="relative group"><div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors"><i data-lucide="lock" class="w-5 h-5"></i></div><input type="password" id="auth-pass" class="input-modern w-full py-4 pl-12 pr-12 text-sm" placeholder="Password"><button type="button" onclick="togglePasswordVisibility('auth-pass', this)" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded-full transition-colors"><i data-lucide="eye" class="w-5 h-5"></i></button></div>
+                <button id="btn-auth-action" onclick="handleAuthAction()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-900/40 transition-all active:scale-95 flex items-center justify-center gap-2 mt-2"><span id="btn-text">MASUK SEKARANG</span><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+            </div>
+            <div class="pt-4 border-t border-white/10"><p id="auth-footer-text" class="text-xs text-slate-400 mb-2">Belum punya akun?</p><button onclick="toggleAuthMode()" id="auth-switch-btn" class="text-xs font-extrabold text-purple-300 hover:text-white uppercase tracking-widest transition-colors py-2 px-4 rounded-lg hover:bg-white/5">Daftar Akun Baru</button></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP STRUCTURE -->
+  <div id="main-app" class="hidden max-w-md mx-auto relative min-h-screen">
+    <header class="p-6 pt-8 flex justify-between items-center relative z-40">
+      <div class="space-y-1">
+        <p class="text-[10px] font-black text-slate-500 uppercase tracking-wide" id="header-masehi-date">--:--</p>
+        <p class="text-xs font-black text-emerald-500 uppercase tracking-wide" id="header-hijri-date">1 RAMADHAN 1447 H</p>
+        <h2 id="greeting-text" class="text-2xl font-extrabold text-white leading-tight mt-1">Assalamu'alaikum, <br><span id="user-name-display" class="gradient-text text-3xl">Akhi</span></h2>
+      </div>
+    </header>
+
+    <main class="px-6 pb-32">
+        <!-- TAB HOME -->
+        <section id="tab-home" class="section active space-y-6">
+            <!-- Smart Recommendation Card (Cleaned) -->
+            <div class="glass-card p-4 flex gap-3 items-start border-l-4 border-l-indigo-500 shadow-xl" id="smart-recommendation-card">
+               <div class="p-2 bg-indigo-500/20 rounded-lg flex-shrink-0">
+                   <i data-lucide="brain-circuit" class="w-5 h-5 text-indigo-400"></i>
+               </div>
+               <div>
+                   <p class="text-[9px] font-black uppercase text-indigo-300 tracking-widest mb-1">Rekomendasi Ibadah</p>
+                   <p id="smart-recommendation-text" class="text-xs font-bold text-white leading-snug">
+                       Menganalisis kebiasaan antum...
+                   </p>
+               </div>
+            </div>
+
+            <div class="app-card bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white relative overflow-hidden shadow-2xl shadow-purple-900/30 flex flex-col justify-between min-h-[200px]">
+                <div class="relative z-10 flex justify-between items-start">
+                    <div><p class="text-[10px] font-black uppercase opacity-70 mb-1 tracking-widest">Ramadhan Kariim</p><h3 id="card-hijri-display" class="text-2xl font-black italic tracking-tighter">1 RAMADHAN 1447 H</h3></div>
+                    <div class="text-right"><p id="countdown-label" class="text-[9px] font-black uppercase opacity-70 mb-0.5 tracking-wide">DETEKSI...</p><p id="countdown-timer" class="text-lg font-black tracking-tighter tabular-nums">00:00:00</p></div>
+                </div>
+                <div class="relative z-10 my-4"><p id="daily-inspiration-text" class="inspiration-text italic text-sm font-medium leading-relaxed opacity-90">...</p></div>
+                <div class="relative z-10"><select id="home-date-filter" class="input-field card-select py-3 text-sm font-bold shadow-lg" onchange="changeActiveDay(this.value)"></select></div>
+            </div>
+
+            <!-- GRID MENU 4 CARD BARU (REAL-TIME DATA) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div onclick="filterHabits('Shalat Wajib')" class="glass-card p-4 flex flex-col items-center justify-center text-center gap-1.5 min-h-[110px] active:scale-95 transition-all cursor-pointer border border-white/5 hover:bg-white/5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="zap" class="w-16 h-16 text-purple-500"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center mb-1"><i data-lucide="activity" class="w-4 h-4 text-purple-400"></i></div>
+                    <div>
+                        <h4 id="home-stat-wajib" class="text-2xl font-black text-white leading-none tracking-tighter mb-1">0 / 5</h4>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Sholat Wajib</p>
+                    </div>
+                </div>
+                <div onclick="filterHabits('Sholat Sunnah')" class="glass-card p-4 flex flex-col items-center justify-center text-center gap-1.5 min-h-[110px] active:scale-95 transition-all cursor-pointer border border-white/5 hover:bg-white/5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="star" class="w-16 h-16 text-emerald-500"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center mb-1"><i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i></div>
+                    <div>
+                        <h4 id="home-stat-sunnah" class="text-2xl font-black text-white leading-none tracking-tighter mb-1">0 / 0</h4>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Sunnah</p>
+                    </div>
+                </div>
+                <div onclick="filterHabits('Ramadhan Challenger')" class="glass-card p-4 flex flex-col items-center justify-center text-center gap-1.5 min-h-[110px] active:scale-95 transition-all cursor-pointer border border-white/5 hover:bg-white/5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="trophy" class="w-16 h-16 text-pink-500"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center mb-1"><i data-lucide="target" class="w-4 h-4 text-pink-400"></i></div>
+                    <div>
+                        <h4 id="home-stat-challenger" class="text-2xl font-black text-white leading-none tracking-tighter mb-1">0 / 0</h4>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Challenger</p>
+                    </div>
+                </div>
+                <div onclick="navTo('progress')" class="glass-card p-4 flex flex-col items-center justify-center text-center gap-1.5 min-h-[110px] active:scale-95 transition-all cursor-pointer border border-white/5 hover:bg-white/5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="book" class="w-16 h-16 text-blue-500"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mb-1"><i data-lucide="book-open" class="w-4 h-4 text-blue-400"></i></div>
+                    <div>
+                        <h4 id="home-stat-quran" class="text-xl font-black text-white leading-none tracking-tighter mb-1 truncate max-w-[100px]">0 / 30</h4>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Khatam Quran</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card p-4 flex items-center gap-4 border-l-4 border-l-purple-500 shadow-lg">
+                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0"><i data-lucide="sparkles" class="w-5 h-5 text-purple-400 animate-pulse"></i></div>
+                <div class="flex-1"><p class="text-[9px] font-black uppercase text-purple-300 tracking-widest mb-0.5">Waktu Sahur & Imsak</p><p id="smart-suhoor-text" class="text-xs font-bold text-white leading-snug">Menghitung...</p></div>
+            </div>
+
+            <div class="glass-card p-5 space-y-4">
+               <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-1">
+                    <div class="flex flex-col"><div class="flex items-center gap-2"><div class="p-1.5 bg-purple-500/20 rounded-lg"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-purple-400"></i></div><span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Jadwal Sholat</span></div><span id="current-location-display" class="text-[9px] font-bold text-purple-300 uppercase truncate max-w-[180px] mt-1 ml-1">Mendeteksi Lokasi...</span></div>
+                    <div class="flex items-center gap-3">
+                        <div onclick="toggleAdzanModal(true)" class="cursor-pointer w-8 h-8 flex items-center justify-center bg-indigo-600/20 rounded-full border border-indigo-500/30 active:scale-90 transition-transform"><i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i></div>
+                        <div id="btn-refresh-location" onclick="detectLocation()" class="cursor-pointer w-8 h-8 flex items-center justify-center bg-purple-600/20 rounded-full border border-purple-500/30 active:scale-90 transition-transform"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-purple-400"></i></div>
+                    </div>
+                </div>
+                <div class="prayer-times-scroll">
+                    <div class="prayer-time-item"><p class="prayer-label">Subuh</p><p class="prayer-time" id="time-fajr">--:--</p></div>
+                    <div class="prayer-time-item"><p class="prayer-label">Dzhur</p><p class="prayer-time" id="time-dhuhr-val">--:--</p></div>
+                    <div class="prayer-time-item"><p class="prayer-label">Ashar</p><p class="prayer-time" id="time-asr">--:--</p></div>
+                    <div class="prayer-time-item"><p class="prayer-label">Mghrb</p><p class="prayer-time" id="time-maghrib">--:--</p></div>
+                    <div class="prayer-time-item"><p class="prayer-label">Isya</p><p class="prayer-time" id="time-isha">--:--</p></div>
+                </div>
+            </div>
+            
+            <div id="habit-container" class="space-y-4 pb-4"></div>
+        </section>
+
+        <!-- TAB PROGRESS -->
+        <section id="tab-progress" class="section space-y-6">
+             <div class="flex border-b border-white/10 mb-4 px-2 overflow-x-auto no-scrollbar"><button id="btn-quran-juz" onclick="switchQuranTab('juz')" class="quran-tab-btn active flex-1">1 Day 1 Juz</button><button id="btn-quran-page" onclick="switchQuranTab('page')" class="quran-tab-btn flex-1">2 Lembar</button><button id="btn-quran-manual" onclick="switchQuranTab('manual')" class="quran-tab-btn flex-1">Manual</button></div>
+             <!-- Juz View -->
+             <div id="view-quran-juz" class="space-y-5">
+                 <div class="glass-card p-6 relative overflow-hidden border border-white/10 shadow-xl">
+                   <div class="flex justify-between items-end mb-4">
+                      <div>
+                         <div class="flex items-center gap-2 mb-2">
+                             <div class="p-2 bg-purple-500/20 rounded-xl"><i data-lucide="bookmark" class="w-4 h-4 text-purple-400"></i></div>
+                             <h4 class="text-sm font-black uppercase text-white tracking-tight">Progress Khatam</h4>
+                         </div>
+                         <p class="text-xs text-slate-400 font-bold uppercase tracking-widest pl-1"><span id="juz-completed-count" class="text-white">0</span> of 30 Juz</p>
+                      </div>
+                      <h2 class="text-4xl font-black gradient-text leading-none" id="juz-progress-percent">0%</h2>
+                   </div>
+                   <div class="bg-slate-800 h-3 rounded-full overflow-hidden border border-white/5">
+                      <div id="juz-progress-bar" class="bg-gradient-to-r from-purple-500 to-emerald-400 h-full transition-all duration-700 shadow-[0_0_15px_rgba(168,85,247,0.5)]" style="width: 0%"></div>
+                   </div>
+                </div>
+                <div class="flex justify-between items-center px-1 mb-2">
+                    <h3 class="text-lg font-black uppercase text-white tracking-tighter">30 Juz Checklist</h3>
+                    <button onclick="resetJuzProgress()" class="bg-red-500/10 text-red-400 p-2.5 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                 <div id="juz-list-container" class="grid grid-cols-2 gap-3 pb-8"></div>
+             </div>
+             <!-- Page View -->
+             <div id="view-quran-page" class="hidden space-y-5">
+                <div class="glass-card p-4 border border-emerald-500/30 bg-emerald-900/10 mb-4 relative overflow-hidden" id="khatam-prediction-card">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl"></div>
+                    <div class="flex items-start gap-3 relative z-10">
+                        <div class="p-2 bg-emerald-500/20 rounded-lg shrink-0 mt-1">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase text-emerald-300 tracking-widest mb-1">Perkiraan Khatam</p>
+                            <p id="khatam-prediction-text" class="text-xs font-bold text-white leading-relaxed">Menghitung kecepatan bacaan antum...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-card glass-card relative overflow-hidden border border-white/10 p-6 text-center">
+                    <div class="relative z-10 flex flex-col gap-6">
+                        <div class="flex justify-between items-center"><div class="flex items-center gap-3"><div class="p-2 bg-emerald-500/20 rounded-xl"><i data-lucide="book-open" class="w-5 h-5 text-emerald-400"></i></div><p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Progress</p></div><div class="bg-indigo-500/20 px-3 py-1.5 rounded-full border border-indigo-500/30"><p class="text-[9px] font-black text-indigo-300 uppercase" id="remaining-pages-label">SISA 604 Hal</p></div></div>
+                        <div class="flex justify-between items-end"><div class="flex items-baseline gap-1"><h4 class="text-5xl font-black text-white tracking-tighter" id="total-page-count">0</h4><span class="text-sm font-black text-slate-500 uppercase ml-1">/ 604</span></div><span class="text-emerald-400 font-black text-3xl" id="total-page-percent">0%</span></div>
+                        <div class="mini-progress-bg h-3 bg-slate-800 rounded-full overflow-hidden"><div id="total-page-bar" class="mini-progress-bar bg-gradient-to-r from-purple-500 to-emerald-400 h-full transition-all duration-1000" style="width: 0%"></div></div>
+                    </div>
+                </div>
+                <div class="planner-card space-y-5">
+                    <div class="flex justify-between items-center"><label class="text-[10px] font-black uppercase text-purple-300 tracking-widest">Target Khatam (Maks 10x)</label><span id="khatam-target-val" class="text-xl font-black italic text-white">1 Kali</span></div>
+                    <input type="range" id="khatam-range" min="1" max="10" step="1" value="1" class="range-slider" oninput="handleQuranPlannerSlider(this.value)">
+                    <div class="grid grid-cols-2 gap-3 text-center"><div class="bg-black/30 p-4 rounded-2xl"><p class="text-[9px] font-black text-slate-400 uppercase mb-1">Target Harian</p><p id="target-pages-day" class="text-lg font-black text-emerald-400">20 Halaman</p></div><div class="bg-black/30 p-4 rounded-2xl"><p class="text-[9px] font-black text-slate-400 uppercase mb-1">Per Sholat</p><p id="target-pages-prayer" class="text-lg font-black text-purple-400">4 Halaman</p></div></div>
+                </div>
+                 <div class="flex justify-between items-center px-1 mb-1 mt-4">
+                    <h3 class="text-lg font-black uppercase text-white tracking-tighter">Capaian Halaman</h3>
+                    <button onclick="resetPageProgress()" class="bg-red-500/10 text-red-400 p-2.5 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="progress-table-container no-scrollbar shadow-xl border border-white/5 pb-8"><table class="progress-table text-white"><thead><tr><th style="width:40px;">Tgl</th><th>Subuh</th><th>Dzhur</th><th>Ashar</th><th>Mghb</th><th>Isya</th></tr></thead><tbody id="progress-table-body"></tbody></table></div>
+             </div>
+             <!-- Manual View -->
+             <div id="view-quran-manual" class="hidden space-y-6">
+                <div class="flex justify-between items-center px-1 mb-2">
+                    <h3 class="text-lg font-black uppercase text-white tracking-tighter">Catatan Bacaan</h3>
+                    <button onclick="resetManualLog()" class="bg-red-500/10 text-red-400 p-2.5 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                 <div class="glass-card p-6 space-y-5 border border-white/10 shadow-lg"><div class="space-y-2"><label class="text-[10px] uppercase font-bold text-slate-400 tracking-widest pl-1">Mulai</label><div class="flex gap-3"><select id="manual-surah-start" class="manual-select flex-[2] text-sm"></select><input type="number" id="manual-ayat-start" class="input-field flex-1 text-center font-bold" placeholder="Ayat"></div></div><div class="flex justify-center -my-2 text-slate-500"><i data-lucide="arrow-down" class="w-5 h-5"></i></div><div class="space-y-2"><label class="text-[10px] uppercase font-bold text-slate-400 tracking-widest pl-1">Sampai</label><div class="flex gap-3"><select id="manual-surah-end" class="manual-select flex-[2] text-sm"></select><input type="number" id="manual-ayat-end" class="input-field flex-1 text-center font-bold" placeholder="Ayat"></div></div><button onclick="saveManualEntry()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-widest text-xs mt-2 flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Simpan Catatan</button></div><div id="manual-log-list" class="space-y-3"></div></div>
+        </section>
+
+        <!-- TAB DOA, GOALS, HISTORY SECTIONS ... (NO CHANGE NEEDED EXCEPT TAB SETTINGS) -->
+        <section id="tab-duas" class="section space-y-6">
+            <h3 class="text-3xl font-black uppercase text-white text-center mb-6">Doa <span class="gradient-text">Ramadhan</span></h3>
+            <div class="flex border-b border-white/10 mb-4 px-2 overflow-x-auto no-scrollbar">
+                <button id="btn-dua-doa" onclick="switchDuaTab('doa')" class="dua-tab-btn active flex-1 min-w-[80px]">Doa Harian</button>
+                <button id="btn-dua-niat" onclick="switchDuaTab('niat')" class="dua-tab-btn flex-1 min-w-[80px]">Niat</button>
+                <button id="btn-dua-fiqih" onclick="switchDuaTab('fiqih')" class="dua-tab-btn flex-1 min-w-[80px]">Fiqih</button>
+            </div>
+            <div id="view-dua-doa" class="space-y-6"><div id="dua-list-container" class="space-y-5 pb-8 overflow-y-auto max-h-[70vh] no-scrollbar px-1"></div></div>
+            <div id="view-dua-niat" class="hidden space-y-5 px-1 pb-8">
+                 <div class="dua-card-list space-y-4"><div class="flex justify-between items-center mb-1"><p class="text-[9px] font-black uppercase text-emerald-400 tracking-widest text-white">Niat Puasa Ramadhan Besok</p><button onclick="speakText('نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ لِلّٰهِ تَعَالَى')" class="p-2 bg-emerald-500/20 rounded-full active:scale-90 transition-transform"><i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i></button></div><p class="text-xl font-serif text-right text-white leading-loose">نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ لِلّٰهِ تَعَالَى</p><p class="text-xs italic text-slate-400">Nawaitu shauma ghadin 'an ada'i fardhi syahri Ramadhana hadzihis sanati lillahi ta'ala</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Aku berniat puasa esok hari untuk menunaikan fardhu di bulan Ramadhan tahun ini, karena Allah Ta'ala."</p></div>
+                 <div class="dua-card-list space-y-4"><div class="flex justify-between items-center mb-1"><p class="text-[9px] font-black uppercase text-emerald-400 tracking-widest text-white">Niat Puasa 1 Bulan</p><button onclick="speakText('نَوَيْتُ صَوْمَ جَمِيْعِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ تَقْلِيْدًا لِلْإِمَامِ مَالِكٍ فَرْضًا لِلهِ تَعَالَى')" class="p-2 bg-emerald-500/20 rounded-full active:scale-90 transition-transform"><i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i></button></div><p class="text-[10px] text-slate-400 italic mb-2">Dibaca di awal malam Ramadhan (biasanya malam 1).</p><p class="text-xl font-serif text-right text-white leading-loose">نَوَيْتُ صَوْمَ جَمِيْعِ شَهْرِ رَمَضَانَ هَذِهِ السَّنَةِ تَقْلِيْدًا لِلْإِمَامِ مَالِكٍ فَرْضًا لِلهِ تَعَالَى</p><p class="text-xs italic text-slate-400">Nawaitu shauma jami'i shahri Ramadhani hadzihis-sanati taqlīdan lil-Imāmi Mālik fardhan lillāhi ta'ālā</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Aku niat berpuasa di sepanjang bulan Ramadhan tahun ini dengan mengikuti Imam Malik, wajib karena Allah."</p></div>
+                 <div class="dua-card-list space-y-4"><div class="flex justify-between items-center mb-1"><p class="text-[9px] font-black uppercase text-purple-400 tracking-widest text-white">Doa Berbuka Puasa</p><button onclick="speakText('ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللهُ')" class="p-2 bg-purple-500/20 rounded-full active:scale-90 transition-transform"><i data-lucide="volume-2" class="w-4 h-4 text-purple-400"></i></button></div><p class="text-xl font-serif text-right text-white leading-loose">ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللهُ</p><p class="text-xs italic text-slate-400">Dzahabadzh dzhama-u wabtallatil-'uruqu wa tsabatal-ajru insyaa-Allah</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Telah hilang rasa haus, dan urat-urat telah basah serta pahala telah tetap, insya Allah."</p></div>
+                 <div class="dua-card-list space-y-4"><p class="text-[9px] font-black uppercase text-blue-400 tracking-widest mb-1 text-white">Niat Zakat Fitrah (Diri Sendiri)</p><p class="text-xl font-serif text-right text-white leading-loose">نَوَيْتُ أَنْ أُخْرِجَ زَكَاةَ الْفِطْرِ عَنْ نَفْسِيْ فَرْضًا لِلّٰهِ تَعَالَى</p><p class="text-xs italic text-slate-400">Nawaitu an ukhrija zakaatal fithri 'an nafsii fardhan lillaahi ta'alaa</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Aku niat mengeluarkan zakat fitrah untuk diriku sendiri, fardhu karena Allah Ta'ala."</p></div>
+                 <div class="dua-card-list space-y-4"><p class="text-[9px] font-black uppercase text-blue-400 tracking-widest mb-1 text-white">Niat Zakat Fitrah (Untuk Istri)</p><p class="text-xl font-serif text-right text-white leading-loose">نَوَيْتُ أَنْ أُخْرِجَ زَكَاةَ الْفِطْرِ عَنْ زَوْجَتِيْ فَرْضًا لِلّٰهِ تَعَالَى</p><p class="text-xs italic text-slate-400">Nawaitu an ukhrija zakaatal fithri 'an zaujatii fardhan lillaahi ta'alaa</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Aku niat mengeluarkan zakat fitrah untuk istriku, fardhu karena Allah Ta'ala."</p></div>
+                 <div class="dua-card-list space-y-4"><p class="text-[9px] font-black uppercase text-blue-400 tracking-widest mb-1 text-white">Niat Zakat Fitrah (Seluruh Keluarga)</p><p class="text-xl font-serif text-right text-white leading-loose">نَوَيْتُ أَنْ أُخْرِجَ زَكَاةَ الْفِطْرِ عَنِّيْ وَعَنْ جَمِيْعِ مَا يَلْزَمُنِيْ نَفَقَاتُهُمْ شَرْعًا فَرْضًا لِلّٰهِ تَعَالَى</p><p class="text-xs italic text-slate-400">Nawaitu an ukhrija zakaatal fithri 'annii wa 'an jamii'i maa yalzamunii nafaqatuhum syar'an fardhan lillaahi ta'alaa</p><p class="text-sm font-bold text-emerald-400 leading-snug">"Aku niat mengeluarkan zakat fitrah untuk diriku dan seluruh orang yang nafkahnya menjadi tanggunganku, fardhu karena Allah Ta'ala."</p></div>
+            </div>
+            <div id="view-dua-fiqih" class="hidden space-y-5 px-1 pb-8">
+                 <div class="glass-card p-5 space-y-3"><h4 class="text-sm font-black uppercase text-purple-400 tracking-wide border-b border-white/10 pb-2">Rukun Puasa</h4><ul class="list-disc list-inside text-xs text-slate-300 space-y-2 leading-relaxed"><li><strong class="text-white">Niat:</strong> Dilakukan malam hari sebelum fajar.</li><li><strong class="text-white">Imssak:</strong> Menahan diri dari hal yang membatalkan puasa dari terbit fajar hingga terbenam matahari.</li></ul></div>
+                 <div class="glass-card p-5 space-y-3"><h4 class="text-sm font-black uppercase text-emerald-400 tracking-wide border-b border-white/10 pb-2">Amalan Sunnah Rasul</h4><ul class="list-disc list-inside text-xs text-slate-300 space-y-2 leading-relaxed"><li>Mengakhirkan Sahur.</li><li>Menyegerakan Berbuka.</li><li>Berdoa saat berbuka.</li><li>Memberi makan orang berbuka.</li><li>Tadarus Al-Quran.</li></ul></div>
+                 <div class="glass-card p-5 space-y-3"><h4 class="text-sm font-black uppercase text-red-400 tracking-wide border-b border-white/10 pb-2">Pembatal Puasa</h4><ul class="list-disc list-inside text-xs text-slate-300 space-y-2 leading-relaxed"><li>Makan/minum sengaja.</li><li>Muntah sengaja.</li><li>Berhubungan suami istri.</li><li>Haid/Nifas.</li><li>Hilang akal/Gila.</li></ul></div>
+            </div>
+        </section>
+
+        <section id="tab-goals" class="section space-y-6"><div class="flex justify-between items-center px-1"><h3 class="text-3xl font-black uppercase text-white leading-tight">My Goals</h3><button onclick="addNewGoal()" class="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl active:scale-90 transition-transform"><i data-lucide="plus" class="w-6 h-6"></i></button></div><div id="goals-list-container" class="space-y-5 pb-8"></div></section>
+
+        <section id="tab-history" class="section space-y-6">
+            <div class="flex justify-between items-center gap-4 px-1"><h3 class="text-3xl font-black uppercase text-white leading-tight">Rapor</h3><select id="report-day-filter" class="input-field card-select py-2 px-4 text-xs w-auto h-auto font-bold shadow-md" onchange="handleReportFilterChange(this.value)"></select></div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <button onclick="generateShareCard('daily')" class="bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all text-[10px] uppercase tracking-wide"><i data-lucide="share-2" class="w-3.5 h-3.5"></i><span>Kartu Harian</span></button>
+              <button onclick="generateShareCard('monthly')" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all text-[10px] uppercase tracking-wide"><i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i><span>Rapor Bulanan</span></button>
+            </div>
+            <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-white/5"><button id="btn-view-harian" onclick="switchReportView('harian')" class="report-tab-btn active flex-1 py-3">Harian</button><button id="btn-view-bulanan" onclick="switchReportView('bulanan')" class="report-tab-btn flex-1 py-3">Bulanan</button></div>
+            <div id="report-harian-view" class="space-y-5"><div class="glass-card p-5"><canvas id="dailyChart" height="220"></canvas></div><div id="daily-log-container" class="space-y-4 pb-8"></div></div>
+            <div id="report-bulanan-view" class="hidden space-y-5">
+                <div class="glass-card p-5 mb-4"><canvas id="monthlyTrendChart" height="220"></canvas></div>
+                <!-- ADDED: Achievement Badges -->
+                <div class="glass-card p-5 mb-4">
+                   <h4 class="text-sm font-black uppercase text-white tracking-widest mb-3 border-b border-white/10 pb-2">Pencapaian Spesial</h4>
+                   <div id="achievement-badges-grid" class="grid grid-cols-2 gap-2">
+                       <!-- Badges will be injected here -->
+                   </div>
+                </div>
+                <div class="mini-card-grid pb-8">
+                    <div class="stat-card glass-card border-b-4 border-emerald-500"><p class="stat-label">Total Puasa</p><span class="stat-value" id="stat-total-puasa">0</span></div>
+                    <div class="stat-card glass-card border-b-4 border-blue-400"><p class="stat-label">Khatam Progress</p><span class="stat-value" id="stat-total-khatam">0%</span></div>
+                    <div class="stat-card glass-card border-b-4 border-purple-500"><p class="stat-label">Efisiensi Ibadah</p><span class="stat-value" id="stat-avg-eff">0%</span></div>
+                    <div class="stat-card glass-card border-b-4 border-orange-500"><p class="stat-label">Goals Tercapai</p><span class="stat-value" id="stat-goals-done">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- UPDATED SETTINGS SECTION WITH COPY BUTTON -->
+        <section id="tab-settings" class="section space-y-8">
+            <h3 class="text-3xl font-black uppercase text-center text-white">App <span class="gradient-text">Setelan</span></h3>
+            
+            <div class="glass-card p-8 text-center space-y-5 relative text-white border border-white/10 shadow-xl mx-2"><div class="relative inline-block mx-auto"><img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ramadhan" class="profile-avatar mx-auto shadow-2xl"><div class="absolute bottom-0 right-[-5px] bg-purple-600 p-2.5 rounded-full border-4 border-[#1e1b4b] cursor-pointer active:scale-90 transition-transform" onclick="changeAvatar()"><i data-lucide="camera" class="w-4 h-4 text-white"></i></div><input type="file" id="avatar-upload-input" class="hidden" accept="image/*" onchange="handleImageUpload(event)"></div><h4 id="profile-display-name-val" class="text-xl font-extrabold text-white tracking-tight">User</h4></div>
+            
+             <!-- ADDED: Theme Selector -->
+             <div class="space-y-3 px-2">
+              <p class="text-[10px] font-black uppercase text-slate-400 pl-2 tracking-widest border-l-4 border-indigo-500 ml-1 pl-3">Tema Aplikasi</p>
+              <div class="glass-card p-5">
+                  <div class="grid grid-cols-4 gap-4" id="theme-selector-container">
+                      <!-- Themes injected via JS -->
+                  </div>
+              </div>
+            </div>
+
+            <div class="space-y-3 px-2">
+              <p class="text-[10px] font-black uppercase text-slate-400 pl-2 tracking-widest border-l-4 border-emerald-500 ml-1 pl-3">Daily Journal</p>
+              <div class="glass-card p-6 space-y-5">
+                  <div class="grid grid-cols-4 gap-4">
+                      <button onclick="setMood('grateful')" class="mood-btn" id="mood-grateful">😇</button>
+                      <button onclick="setMood('happy')" class="mood-btn" id="mood-happy">😊</button>
+                      <button onclick="setMood('tired')" class="mood-btn" id="mood-tired">😴</button>
+                      <button onclick="setMood('productive')" class="mood-btn" id="mood-productive">🔥</button>
+                  </div>
+                  <div id="ai-recommender-box" class="hidden bg-indigo-900/30 border border-indigo-500/30 p-3 rounded-xl gap-3 items-start animate-fade-in transition-all">
+                      <div class="p-1.5 bg-indigo-500/20 rounded-lg shrink-0 mt-0.5"><i data-lucide="bot" class="w-4 h-4 text-indigo-300"></i></div>
+                      <div><p class="text-[9px] font-bold text-indigo-300 uppercase tracking-wider mb-0.5">Nasihat Harian</p><p id="ai-recommender-text" class="text-xs text-white leading-relaxed font-medium">...</p></div>
+                  </div>
+                  <textarea id="journal-input" class="input-field h-32 resize-none text-sm leading-relaxed" placeholder="Bagaimana perjalanan spiritualmu hari ini?"></textarea>
+                  <button onclick="saveJournalEntry()" class="btn-primary py-3 text-xs bg-slate-800 hover:bg-slate-700">Simpan Jurnal</button>
+              </div>
+            </div>
+
+            <div class="space-y-3 px-2">
+              <p class="text-[10px] font-black uppercase text-slate-400 pl-2 tracking-widest border-l-4 border-blue-500 ml-1 pl-3">Akun & Data</p>
+              <div class="glass-card p-5 space-y-4">
+                  <input type="text" id="pref-name" class="input-field text-sm" placeholder="Ganti Username" oninput="checkSettingsChange()">
+                  <button id="btn-save-settings" disabled onclick="saveAllSettings()" class="btn-primary py-3 text-xs bg-blue-600">Simpan Perubahan</button>
+              </div>
+            </div>
+
+            <div class="space-y-3 px-2 pb-8">
+              <p class="text-[10px] font-black uppercase text-slate-400 pl-2 tracking-widest border-l-4 border-indigo-500 ml-1 pl-3">Cloud Sync (GAS)</p>
+              <div class="glass-card p-5 space-y-4 bg-indigo-950/20 border-indigo-500/20">
+                  <div class="space-y-3 text-[10px] text-slate-300 font-medium text-left leading-relaxed">
+                      <p><span class="step-badge">1</span> Siapkan Google Sheet.</p>
+                      <div class="flex items-center justify-between">
+                          <p><span class="step-badge">2</span> Salin script backend.</p>
+                          <!-- DEDICATED COPY BUTTON ADDED HERE -->
+                          <button onclick="copyBackendScript()" class="bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 active:scale-95 shadow-sm"><i data-lucide="copy" class="w-3 h-3"></i> Salin Script</button>
+                      </div>
+                      <p><span class="step-badge">3</span> Deploy Web App.</p>
+                      <p><span class="step-badge">4</span> Masukkan URL.</p>
+                  </div>
+                  <input type="text" id="cfg-gs-url" class="input-field text-[10px] py-3" placeholder="URL Web App /exec" oninput="checkSettingsChange()">
+                  <div class="grid grid-cols-2 gap-2">
+                      <button onclick="saveCloudUrl()" class="btn-primary bg-indigo-600 text-[10px] py-3 hover:bg-indigo-500">Simpan URL</button>
+                      <button onclick="testGASConnection()" class="btn-primary bg-slate-800 border border-indigo-500/20 text-[10px] py-3 hover:bg-slate-700">Test Koneksi</button>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 mt-2">
+                      <button onclick="syncToCloud()" class="btn-primary bg-emerald-700 text-[10px] py-3 hover:bg-emerald-600 flex items-center justify-center gap-1"><i data-lucide="upload-cloud" class="w-3 h-3"></i> Upload Data</button>
+                      <button onclick="syncFromCloud()" class="btn-primary bg-blue-700 text-[10px] py-3 hover:bg-blue-600 flex items-center justify-center gap-1"><i data-lucide="download-cloud" class="w-3 h-3"></i> Ambil Data</button>
+                  </div>
+              </div>
+              <button onclick="doLogout()" class="w-full p-4 text-red-400 font-black text-xs border border-red-500/20 rounded-xl bg-red-500/5 hover:bg-red-500/10 uppercase tracking-widest flex items-center justify-center gap-2 mt-4 active:scale-95 transition-transform"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar Akun</button>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button onclick="navTo('home')" class="nav-btn active" id="btn-home"><i data-lucide="home"></i><span>Home</span></button>
+      <button onclick="navTo('progress')" class="nav-btn" id="btn-progress"><i data-lucide="layout-grid"></i><span>Quran</span></button>
+      <button onclick="navTo('duas')" class="nav-btn" id="btn-duas"><i data-lucide="book-heart"></i><span>Doa</span></button>
+      <button onclick="navTo('goals')" class="nav-btn" id="btn-goals"><i data-lucide="target"></i><span>Target</span></button>
+      <button onclick="navTo('history')" class="nav-btn" id="btn-history"><i data-lucide="bar-chart-2"></i><span>Rapor</span></button>
+      <button onclick="navTo('settings')" class="nav-btn" id="btn-settings"><i data-lucide="settings"></i><span>Sistem</span></button>
+    </nav>
+  </div>
+
+  <!-- ADZAN SETTINGS MODAL (CLEANED) -->
+  <div id="modal-adzan-settings" class="modal-overlay">
+    <div class="modal-content space-y-5">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3">
+            <h3 class="text-lg font-black uppercase text-white tracking-wide">Pengaturan Adzan</h3>
+            <button onclick="toggleAdzanModal(false)" class="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="space-y-2">
+                <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-white/5">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-white">Notifikasi Sistem</span>
+                        <span class="text-[9px] text-slate-400">Tampilkan di bar notifikasi (Tanpa Suara)</span>
+                    </div>
+                    <div id="toggle-sys-notif" class="adzan-toggle" onclick="toggleSystemNotification()"></div>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Pilih Waktu Sholat</label>
+                <div id="adzan-toggle-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- Generated via JS -->
+                </div>
+            </div>
+            
+            <button onclick="testSound()" class="w-full py-3 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center gap-2">
+                <i data-lucide="bell" class="w-4 h-4"></i> Test Notifikasi
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <div id="share-card-wrapper">
+    <div id="share-card-template" class="share-card-canvas">
+      <div class="sc-blob sc-blob-1"></div>
+      <div class="sc-blob sc-blob-2"></div>
+      
+      <div class="sc-content">
+        <!-- New Layout: Name First -->
+        <div class="sc-user-header">
+           <div class="sc-user-name" id="sc-user-name">User</div>
+        </div>
+
+        <div class="sc-card text-center mb-2">
+           <p class="sc-date-label" id="sc-date-label">DAILY REPORT</p>
+           <div id="sc-main-title"></div>
+           <p class="text-[10px] text-slate-400 mt-2 font-medium italic" id="sc-quote">"Quote here..."</p>
+        </div>
+
+        <!-- NEW: Fasting Status -->
+        <div id="sc-fasting-status" class="sc-fasting-badge hidden">
+            <!-- Injected via JS -->
+        </div>
+
+        <div class="sc-card">
+           <div class="sc-section-title"><span>SHALAT WAJIB</span></div>
+           <div class="sc-wajib-grid" id="sc-wajib-container"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="sc-card">
+             <div class="sc-section-title"><span>SUNNAH</span></div>
+             <div class="flex flex-col gap-2" id="sc-sunnah-container"></div>
+          </div>
+          <div class="sc-card">
+             <div class="sc-section-title"><span>RAMADHAN</span></div>
+             <div class="flex flex-col gap-2" id="sc-ramadhan-container"></div>
+          </div>
+        </div>
+
+        <div class="sc-card">
+           <div class="sc-section-title"><span>RANGKUMAN PROGRES</span></div>
+           <div class="flex flex-col gap-3" id="sc-progress-container">
+              <!-- Content generated dynamically -->
+           </div>
+        </div>
+
+        <!-- Footer: Branding Last -->
+        <div class="sc-footer">
+           <span class="sc-app-brand">🌙 AMALIN APP</span>
+           <span class="sc-app-tagline">Niatin, Jalanin, Konsisten</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- PWA SERVICE WORKER INJECTION ---
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+            self.addEventListener('notificationclick', function(event) {
+                event.notification.close();
+                event.waitUntil(
+                    clients.matchAll({type: 'window'}).then(function(clientList) {
+                        for (var i = 0; i < clientList.length; i++) {
+                            var client = clientList[i];
+                            if (client.url && 'focus' in client) return client.focus();
+                        }
+                        if (clients.openWindow) return clients.openWindow('/');
+                    })
+                );
+            });
+        `;
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Failed', err));
+    }
+
+    // --- UPDATED BACKEND SCRIPT VARIABLE ---
+    const BACKEND_SCRIPT_CODE = `function doGet(e) { return handleRequest(e); }
+function doPost(e) { return handleRequest(e); }
+
+function handleRequest(e) {
+  var output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  var params = {};
+  try {
+    if (e.postData && e.postData.contents) { params = JSON.parse(e.postData.contents); } 
+    else if (e.parameter) { params = e.parameter; }
+  } catch (err) { return responseJSON({ status: 'error', message: 'Invalid JSON' }); }
+
+  var ss;
+  try {
+     var sheetId = "MASUKAN_ID_SPREADSHEET_ANDA_DISINI"; 
+     if (sheetId && sheetId !== "MASUKAN_ID_SPREADSHEET_ANDA_DISINI") { ss = SpreadsheetApp.openById(sheetId); } 
+     else { ss = SpreadsheetApp.getActiveSpreadsheet(); }
+  } catch (error) { return responseJSON({ status: 'error', message: 'Gagal buka Spreadsheet: ' + error.message }); }
+
+  // DEFINE SHEET KHUSUS USER
+  var regSheetId = "1_jjfYuDAnW3UuqqGu07eG1SubDysldDSUwL6QMqFHlI"; 
+
+  var sheets = {
+    users: initSheet(ss, "Users", ["UserID", "DisplayName", "LastSync"]),
+    habits: initSheet(ss, "Habits", ["UserID", "Date", "HabitID", "HabitName", "Category", "Status"]),
+    quran: initSheet(ss, "QuranTracker", ["UserID", "Type", "Detail", "Status", "LastUpdated"]),
+    journals: initSheet(ss, "Journals", ["UserID", "Date", "Mood", "Content"]),
+    goals: initSheet(ss, "Goals", ["UserID", "Title", "Target", "Current", "Unit"])
+  };
+
+  var action = params.action;
+  var userId = params.user_id || "guest";
+  var clientData = params.data || {};
+
+  if (action === 'ping') { return responseJSON({ status: 'success', message: 'Connected to Amalin Backend!' }); }
+
+  else if (action === 'register_backup') {
+     try {
+         var regSS = SpreadsheetApp.openById(regSheetId);
+         var regSheet = initSheet(regSS, "Backup_Users", ["Timestamp", "Email", "Nama Lengkap", "Password", "Source"]);
+         var acc = clientData.userDB;
+         if(acc) {
+            regSheet.appendRow([new Date().toLocaleString("id-ID"), acc.email, acc.fullName, acc.password, 'Web App']);
+            return responseJSON({status: 'success', message: 'User Backup Saved'});
+         } else {
+            return responseJSON({status: 'error', message: 'No user data'});
+         }
+     } catch(e) { return responseJSON({status: 'error', message: e.message}); }
+  }
+
+  else if (action === 'save_data') {
+    try {
+      var timestamp = new Date().toLocaleString("id-ID");
+      saveUserData(sheets.users, userId, clientData.profile, timestamp);
+
+      if (clientData.dailyHabits) {
+        var habitRows = [];
+        for (var dayKey in clientData.dailyHabits) {
+           var dayHabits = clientData.dailyHabits[dayKey];
+           dayHabits.forEach(function(h) {
+             habitRows.push([userId, dayKey, h.id, h.name, h.category, formatCheck(h.done)]);
+           });
+        }
+        if (habitRows.length > 0) appendDataSimple(sheets.habits, habitRows, userId); 
+      }
+
+      if (clientData.journals) {
+        var journalRows = [];
+        for (var dKey in clientData.journals) {
+          var j = clientData.journals[dKey];
+          if (j.text || j.mood) {
+            journalRows.push([userId, dKey, j.mood, j.text]);
+          }
+        }
+        if (journalRows.length > 0) appendDataSimple(sheets.journals, journalRows, userId);
+      }
+
+      if (clientData.goals && Array.isArray(clientData.goals)) {
+        var goalRows = clientData.goals.map(function(g) {
+           return [userId, g.title, g.target, g.current, g.unit];
+        });
+        if (goalRows.length > 0) appendDataSimple(sheets.goals, goalRows, userId);
+      }
+
+      var quranRows = [];
+      if (clientData.juzLog && Array.isArray(clientData.juzLog)) {
+        clientData.juzLog.forEach(function(done, idx) {
+           quranRows.push([userId, "Juz", "Juz " + (idx+1), formatCheck(done), timestamp]);
+        });
+      }
+      if (clientData.quranLog && Array.isArray(clientData.quranLog)) {
+         clientData.quranLog.forEach(function(dayLog, dayIdx) {
+            dayLog.forEach(function(chk, pIdx) {
+              quranRows.push([userId, "Page_Checklist", "Day " + (dayIdx+1) + " Prayer " + pIdx, formatCheck(chk), timestamp]);
+            });
+         });
+      }
+      // NEW: Manual Log Support
+      if (clientData.manualLog && Array.isArray(clientData.manualLog)) {
+         clientData.manualLog.forEach(function(log) {
+             quranRows.push([userId, "Manual_Log", log.startSurah + ":" + log.startAyat + " -> " + log.endSurah + ":" + log.endAyat, log.timestamp, timestamp]);
+         });
+      }
+      
+      if (quranRows.length > 0) appendDataSimple(sheets.quran, quranRows, userId);
+
+      return responseJSON({ status: 'success', message: 'Data tersimpan rapi tanpa LogID!' });
+    } catch (error) { return responseJSON({ status: 'error', message: 'Save error: ' + error.message }); }
+  }
+  
+  else if (action === 'load_data') {
+      return responseJSON({ status: 'success', message: 'Load feature pending', data: null });
+  }
+
+  return responseJSON({ status: 'error', message: 'Unknown action' });
+}
+
+function initSheet(ss, name, headers) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#dcfce7");
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function responseJSON(data) { return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON); }
+function formatCheck(val) { return val ? "✓" : "-"; }
+
+function appendDataSimple(sheet, rows, userId) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var data = sheet.getDataRange().getValues();
+    var newData = [];
+    var header = data[0];
+    for (var i = 1; i < data.length; i++) { if (data[i][0] != userId) { newData.push(data[i]); } }
+    rows.forEach(function(r){ newData.push(r); });
+    if (newData.length > 0) {
+      sheet.getRange(2, 1, lastRow, header.length).clearContent();
+      sheet.getRange(2, 1, newData.length, newData[0].length).setValues(newData);
+    } else { if(rows.length > 0) sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows); }
+  } else { sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows); }
+}
+
+function saveUserData(sheet, userId, profileObj, ts) {
+  var rows = [[userId, (profileObj ? profileObj.displayName : 'User'), ts]];
+  appendDataSimple(sheet, rows, userId);
+}`;
+
+    const ramadhanQuotes = ["Puasa adalah perisai. (HR. Bukhari)", "Setiap amalan dilipatgandakan. (HR. Muslim)", "Bau mulut orang berpuasa harum di sisi Allah.", "Sedekah paling utama di Ramadhan.", "Dalam sahur terdapat keberkahan.", "Masuk Ramadhan, pintu surga dibuka.", "Beri buka puasa = pahala orang berpuasa.", "Ramadhan ke Ramadhan penghapus dosa.", "Dua kegembiraan bagi orang berpuasa.", "Sebaik-baik kalian belajar Al-Qur'an.", "Tuntutlah ilmu walau ke negeri Cina.", "Amalan kontinu dicintai Allah.", "Nikmat Tuhan mana yang didustakan?", "Sesudah kesulitan ada kemudahan.", "Tangan di atas lebih baik.", "Senyummu adalah sedekah.", "Manusia terbaik yang bermanfaat.", "Mencari ilmu dimudahkan jalan ke surga.", "Al-Qur'an adalah syafaat di hari kiamat.", "Bertakwalah di mana pun berada.", "Dunia adalah perhiasan sementara.", "Allah melihat hati dan amal kalian.", "Berkata baik atau diam.", "Cukuplah kematian sebagai nasihat.", "Kekayaan sejati adalah kekayaan jiwa.", "Surga di bawah telapak kaki ibu.", "Jaga waktu luang sebelum sibukmu.", "Sebaik-baik doa saat berpuasa.", "Puasalah kalian agar kalian sehat.", "Ya Allah, berkahilah Ramadhan kami."];
+    
+    // FULL DOA DATA (Days 1-30) RESTORED
+    const ramadhanDuas = [
+    { day: 1, arabic: "اللَّهُمَّ اجْعَلْ صِيَامِي فِيهِ صِيَامَ الصَّائِمِينَ وَ قِيَامِي فِيهِ قِيَامَ الْقَائِمِينَ", latin: "Allâhummaj’al shiyâmî fîhi shiyâmash shâimîn, wa qiyâmî fîhi qiyâmal qâimîn", meaning: "Ya Allah, jadikanlah puasaku di bulan ini seperti puasa orang-orang yang berpuasa dengan benar." },
+    { day: 2, arabic: "اللَّهُمَّ قَرِّبْنِي فِيهِ إِلَى مَرْضَاتِكَ وَ جَنِّبْنِي فِيهِ مِنْ سَخَطِكَ وَ نَقِمَاتِكَ", latin: "Allâhumma qarribnî fîhi ilâ mardhâtika, wa jannibnî fîhi min sakhatika", meaning: "Ya Allah, dekatkanlah aku di bulan ini kepada keridhaan-Mu, jauhkanlah aku dari kemurkaan-Mu." },
+    { day: 3, arabic: "اللَّهُمَّ ارْزُقْنِي فِيهِ الذِّهْنَ وَ التَّنْبِيهَ وَ بَاعِدْنِي فِيهِ مِنَ السَّفَاهَةِ وَ التَّمْوِيهِ", latin: "Allâhummarzuqnî fîhidz dzihna wattanbîh, wa bâ’idnî fîhi minas safâhati wattamwîh", meaning: "Ya Allah, berikanlah aku di bulan ini kecerdasan dan kesadaran, jauhkanlah aku dari kebodohan." },
+    { day: 4, arabic: "اللَّهُمَّ قَوِّنِي فِيهِ عَلَى إِقَامَةِ أَمْرِكَ وَ أَذِقْنِي فِيهِ حَلاوَةَ ذِكْرِكَ", latin: "Allâhumma qawwinî fîhi ‘alâ iqâmati amrika wa adziqnî fîhi halâwata dzikrika", meaning: "Ya Allah, kuatkanlah aku untuk melaksanakan perintah-Mu dan rasakanlah aku manisnya berdzikir kepada-Mu." },
+    { day: 5, arabic: "اللَّهُمَّ اجْعَلْنِي فِيهِ مِنَ الْمُسْتَغْفِرِينَ وَ اجْعَلْنِي فِيهِ مِنْ عِبَادِكَ الصَّالِحِينَ", latin: "Allâhummaj’alnî fîhi minal mustaghfirîn waj’alnî fîhi min ‘ibâdikash shâlihîn", meaning: "Ya Allah, jadikanlah aku di bulan ini termasuk orang-orang yang memohon ampunan dan hamba-hamba-Mu yang saleh." },
+    { day: 6, arabic: "اللَّهُمَّ لا تَخْذُلْنِي فِيهِ لِتَعَرُّضِ مَعْصِيَتِكَ وَ لا تَضْرِبْنِي بِسِيَاطِ نَقِمَتِكَ", latin: "Allâhumma lâ takhdzulnî fîhi lita’arrudhi ma’shiyatika wa lâ tadhribnî bisiyâthi naqimatika", meaning: "Ya Allah, janganlah Engkau hinakan aku karena perbuatan maksiat terhadap-Mu." },
+    { day: 7, arabic: "اللَّهُمَّ أَعِنِّي فِيهِ عَلَى صِيَامِهِ وَ قِيَامِهِ وَ جَنِّبْنِي فِيهِ مِنْ هَفَوَاتِهِ وَ آثَامِهِ", latin: "Allâhumma a’innî fîhi ‘alâ shiyâmihi wa qiyâmihi wa jannibnî fîhi min hafawâtihi wa âtsâmihi", meaning: "Ya Allah, bantulah aku dalam berpuasa dan shalat malam, serta jauhkanlah aku dari kesalahan dan dosa." },
+    { day: 8, arabic: "اللَّهُمَّ ارْزُقْنِي فِيهِ رَحْمَةَ الْأَيْتَامِ وَ إِطْعَامَ الطَّعَامِ وَ إِفْشَاءَ السَّلامِ", latin: "Allâhummarzuqnî fîhi rahmatal aytâm wa ith’âmath tha’âm wa ifsyâ-as salâm", meaning: "Ya Allah, anugerahkanlah kepadaku rasa sayang terhadap anak yatim, suka memberi makan, dan menyebarkan salam." },
+    { day: 9, arabic: "اللَّهُمَّ اجْعَلْ لِي فِيهِ نَصِيبا مِنْ رَحْمَتِكَ الْوَاسِعَةِ وَ اهْدِنِي فِيهِ لِبَرَاهِينِكَ السَّاطِعَةِ", latin: "Allâhummaj’al lî fîhi nashîban min rahmatikal wâsi’ah wahdinî fîhi libarâhînikas sâthi’ah", meaning: "Ya Allah, jadikanlah bagiku bagian dari rahmat-Mu yang luas dan tunjukilah aku dengan bukti-bukti-Mu yang terang." },
+    { day: 10, arabic: "اللَّهُمَّ اجْعَلْنِي فِيهِ مِنَ الْمُتَوَكِّلِينَ عَلَيْكَ وَ اجْعَلْنِي فِيهِ مِنَ الْفَائِزِينَ لَدَيْكَ", latin: "Allâhummaj’alnî fîhi minal mutawakkilîn ‘alaika waj’alnî fîhi minal fâizîn ladaika", meaning: "Ya Allah, jadikanlah aku di bulan ini termasuk orang-orang yang bertawakal kepada-Mu dan orang-orang yang beruntung di sisi-Mu." },
+    { day: 11, arabic: "اللَّهُمَّ حَبِّبْ إِلَيَّ فِيهِ الْإِحْسَانَ وَ كَرِّهْ إِلَيَّ فِيهِ الْفُسُوقَ وَ الْعِصْيَانَ", latin: "Allâhumma habbib ilayya fîhil ihsân wa karrih ilayya fîhil fusûqa wal ‘ishyân", meaning: "Ya Allah, tanamkanlah di hatiku kecintaan kepada perbuatan baik, dan tanamkanlah kebencian terhadap kefasikan dan kemaksiatan." },
+    { day: 12, arabic: "اللَّهُمَّ زَيِّنِي فِيهِ بِالسِّتْرِ وَ الْعَفَافِ وَ اسْتُرْنِي فِيهِ بِلِبَاسِ الْقُنُوعِ وَ الْكَفَافِ", latin: "Allâhumma zayyinnî fîhi bissitri wal ‘afâf wasturnî fîhi bilibâsil qunû’i wal kafâf", meaning: "Ya Allah, hiasilah diriku dengan penutup aib dan kesucian, serta tutupilah aku dengan pakaian qanaah dan kecukupan." },
+    { day: 13, arabic: "اللَّهُمَّ طَهِّرْنِي فِيهِ مِنَ الدَّنَسِ وَ الْأَقْذَارِ وَ صَبِّرْنِي فِيهِ عَلَى كَائِنَاتِ الْأَقْدَارِ", latin: "Allâhumma thahhirnî fîhi minad danasi wal aqdzâr wa shabbirnî fîhi ‘alâ kâinâtil aqdâr", meaning: "Ya Allah, sucikanlah aku dari kotoran dan keburukan, serta berilah aku kesabaran atas segala ketentuan takdir." },
+    { day: 14, arabic: "اللَّهُمَّ لا تُؤَاخِذْنِي فِيهِ بِالْعَثَرَاتِ وَ أَقِلْنِي فِيهِ مِنَ الْخَطَايَا وَ الْهَفَوَاتِ", latin: "Allâhumma lâ tu-âkhidznî fîhi bil ‘atsarât wa aqilnî fîhi minal khathâyâ wal hafawât", meaning: "Ya Allah, janganlah Engkau hukum aku karena kesalahan-kesalahan, dan hapuskanlah dosa-dosa dan kekhilafanku." },
+    { day: 15, arabic: "اللَّهُمَّ ارْزُقْنِي فِيهِ طَاعَةَ الْخَاشِعِينَ وَ اشْرَحْ فِيهِ صَدْرِي بِإِنَابَةِ الْمُخْبِتِينَ", latin: "Allâhummarzuqnî fîhi thâ’atal khâsyi’în wasyrah fîhi shadrî bi-inâbatil mukhbitîn", meaning: "Ya Allah, anugerahkanlah kepadaku ketaatan orang-orang yang khusyuk dan lapangkanlah dadaku dengan tobat orang-orang yang rendah hati." },
+    { day: 16, arabic: "اللَّهُمَّ وَفِّقْنِي فِيهِ لِمُوَافَقَةِ الْأَبْرَارِ وَ جَنِّبْنِي فِيهِ مُرَافَقَةَ الْأَشْرَارِ", latin: "Allâhumma waffiqnî fîhi limuwâfaqatil abrâr wa jannibnî fîhi murâfaqatal asyrâr", meaning: "Ya Allah, berilah aku taufik untuk sejalan dengan orang-orang baik, dan jauhkanlah aku dari berteman dengan orang-orang jahat." },
+    { day: 17, arabic: "اللَّهُمَّ اهْدِنِي فِيهِ لِصَالِحِ الْأَعْمَالِ وَ اقْضِ لِي فِيهِ الْحَوَائِجَ وَ الْآمَالَ", latin: "Allâhummahdinî fîhi lishâlihil a’mâl waqdhi lî fîhil hawâija wal âmâl", meaning: "Ya Allah, tunjukilah aku kepada amal-amal saleh, dan penuhilah kebutuhan serta cita-citaku." },
+    { day: 18, arabic: "اللَّهُمَّ نَبِّهْنِي فِيهِ لِبَرَكَاتِ أَسْحَارِهِ وَ نَوِّرْ فِيهِ قَلْبِي بِضِيَاءِ أَنْوَارِهِ", latin: "Allâhumma nabbihnî fîhi libarakâti ashârihi wa nawwir fîhi qalbî bidhiyâi anwârihi", meaning: "Ya Allah, sadarkanlah aku akan berkah waktu sahur, dan terangilah hatiku dengan cahaya sinar-Mu." },
+    { day: 19, arabic: "اللَّهُمَّ وَفِّرْ فِيهِ حَظِّي مِنْ بَرَكَاتِهِ وَ سَهِّلْ سَبِيلِي إِلَى خَيْرَاتِهِ", latin: "Allâhumma waffir fîhi hazhzhî min barakâtihi wa sahhil sabîlî ilâ khairâtihi", meaning: "Ya Allah, sempurnakanlah bagianku dari berkah bulan ini dan mudahkanlah jalanku menuju kebaikannya." },
+    { day: 20, arabic: "اللَّهُمَّ افْتَحْ لِي فِيهِ أَبْوَابَ الْجِنَانِ وَ أَغْلِقْ عَنِّي فِيهِ أَبْوَابَ النِّيرَانِ", latin: "Allâhummaftah lî fîhi abwâbal jinân wa aghliq ‘annî fîhi abwâban nîrân", meaning: "Ya Allah, bukakanlah bagiku pintu-pintu surga dan tutuplah bagiku pintu-pintu neraka." },
+    { day: 21, arabic: "اللَّهُمَّ اجْعَلْ لِي فِيهِ إِلَى مَرْضَاتِكَ دَلِيلا وَ لا تَجْعَلْ لِلشَّيْطَانِ فِيهِ عَلَيَّ سَبِيلا", latin: "Allâhummaj’al lî fîhi ilâ mardhâtika dalîlan wa lâ taj’al lisy-syaithâni fîhi ‘alayya sabîlan", meaning: "Ya Allah, jadikanlah bagiku petunjuk menuju keridhaan-Mu dan janganlah berikan jalan bagi setan untuk menguasaiku." },
+    { day: 22, arabic: "اللَّهُمَّ افْتَحْ لِي فِيهِ أَبْوَابَ فَضْلِكَ وَ أَنْزِلْ عَلَيَّ فِيهِ بَرَكَاتِكَ", latin: "Allâhummaftah lî fîhi abwâba fadhlika wa anzil ‘alayya fîhi barakâtika", meaning: "Ya Allah, bukakanlah bagiku pintu-pintu karunia-Mu dan turunkanlah berkah-Mu kepadaku." },
+    { day: 23, arabic: "اللَّهُمَّ اغْسِلْنِي فِيهِ مِنَ الذُّنُوبِ وَ طَهِّرْنِي فِيهِ مِنَ الْعُيُوبِ", latin: "Allâhummaghsilnî fîhi minadz dzunûb wa thahhirnî fîhi minal ‘uyûb", meaning: "Ya Allah, basuhlah aku dari dosa-dosa dan sucikanlah aku dari aib-aib." },
+    { day: 24, arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ فِيهِ مَا يُرْضِيكَ وَ أَعُوذُ بِكَ مِمَّا يُؤْذِيكَ", latin: "Allâhumma innî as-aluka fîhi mâ yurdhîka wa a’ûdzu bika mimmâ yu’dzîka", meaning: "Ya Allah, aku memohon kepada-Mu apa yang mendatangkan ridha-Mu dan aku berlindung kepada-Mu dari apa yang menyakiti-Mu." },
+    { day: 25, arabic: "اللَّهُمَّ اجْعَلْنِي فِيهِ مُحِبّا لِأَوْلِيَائِكَ وَ مُعَادِيا لِأَعْدَائِكَ", latin: "Allâhummaj’alnî fîhi muhibban li-auliyâika wa mu’âdiyan li-a’dâika", meaning: "Ya Allah, jadikanlah aku mencintai wali-wali-Mu dan memusuhi musuh-musuh-Mu." },
+    { day: 26, arabic: "اللَّهُمَّ اجْعَلْ سَعْيِي فِيهِ مَشْكُورا وَ ذَنْبِي فِيهِ مَغْفُورا", latin: "Allâhummaj’al sa’yî fîhi masykûran wa dzanbî fîhi maghfûran", meaning: "Ya Allah, jadikanlah usahaku di bulan ini disyukuri dan dosaku diampuni." },
+    { day: 27, arabic: "اللَّهُمَّ ارْزُقْنِي فِيهِ فَضْلَ لَيْلَةِ الْقَدْرِ وَ صَيِّرْ أُمُورِي فِيهِ مِنَ الْعُسْرِ إِلَى الْيُسْرِ", latin: "Allâhummarzuqnî fîhi fadhla lailatil qadri wa shayyir umûrî fîhi minal ‘usri ilal yusri", meaning: "Ya Allah, anugerahkanlah kepadaku keutamaan Lailatul Qadar dan ubahlah urusanku dari kesulitan menjadi kemudahan." },
+    { day: 28, arabic: "اللَّهُمَّ وَفِّرْ حَظِّي فِيهِ مِنَ النَّوَافِلِ وَ أَكْرِمْنِي فِيهِ بِإِحْضَارِ الْمَسَائِلِ", latin: "Allâhumma waffir hazhzhî fîhi minan nawâfil wa akrimnî fîhi bi-ihdhâril masâil", meaning: "Ya Allah, sempurnakanlah bagianku dari amalan sunnah dan muliakanlah aku dengan terkabulnya permintaan." },
+    { day: 29, arabic: "اللَّهُمَّ غَشِّنِي فِيهِ بِالرَّحْمَةِ وَ ارْزُقْنِي فِيهِ التَّوْفِيقَ وَ الْعِصْمَةَ", latin: "Allâhumma ghasysyinî fîhi birrahmati warzuqnî fîhit taufîqa wal ‘ishmah", meaning: "Ya Allah, liputilah aku dengan rahmat dan anugerahkanlah taufik serta penjagaan." },
+    { day: 30, arabic: "اللَّهُمَّ اجْعَلْ صِيَامِي فِيهِ بِالشُّكْرِ وَ الْقَبُولِ عَلَى مَا تَرْضَاهُ وَ يَرْضَاهُ الرَّسُولُ", latin: "Allâhummaj’al shiyâmî fîhi bisy-syukri wal qabûli ‘alâ mâ tardhâhu wa yardhâhur rasûlu", meaning: "Ya Allah, jadikanlah puasaku di bulan ini diterima dan disyukuri sesuai dengan ridha-Mu dan ridha Rasul-Mu." }
+    ];
+
+    const SURAH_LIST = ["Al-Fatihah", "Al-Baqarah", "Ali 'Imran", "An-Nisa'", "Al-Ma'idah", "Al-An'am", "Al-A'raf", "Al-Anfal", "At-Taubah", "Yunus", "Hud", "Yusuf", "Ar-Ra'd", "Ibrahim", "Al-Hijr", "An-Nahl", "Al-Isra'", "Al-Kahf", "Maryam", "Ta-Ha", "Al-Anbiya'", "Al-Hajj", "Al-Mu'minun", "An-Nur", "Al-Furqan", "Asy-Syu'ara'", "An-Naml", "Al-Qasas", "Al-Ankabut", "Ar-Rum", "Luqman", "As-Sajdah", "Al-Ahzab", "Saba'", "Fatir", "Ya-Sin", "As-Saffat", "Sad", "Az-Zumar", "Ghafir", "Fussilat", "Asy-Syura", "Az-Zukhruf", "Ad-Dukhan", "Al-Jasiyah", "Al-Ahqaf", "Muhammad", "Al-Fath", "Al-Hujurat", "Qaf", "Az-Zariyat", "At-Tur", "An-Najm", "Al-Qamar", "Ar-Rahman", "Al-Waqi'ah", "Al-Hadid", "Al-Mujadilah", "Al-Hasyr", "Al-Mumtahanah", "As-Saff", "Al-Jumu'ah", "Al-Munafiqun", "At-Taghabun", "At-Talaq", "At-Tahrim", "Al-Mulk", "Al-Qalam", "Al-Haqqah", "Al-Ma'arij", "Nuh", "Al-Jinn", "Al-Muzzammil", "Al-Muddassir", "Al-Qiyamah", "Al-Insan", "Al-Mursalat", "An-Naba'", "An-Nazi'at", "Abasa", "At-Takwir", "Al-Infitar", "Al-Mutaffifin", "Al-Insyiqaq", "Al-Buruj", "At-Tariq", "Al-A'la", "Al-Ghasyiyah", "Al-Fajr", "Al-Balad", "Asy-Syams", "Al-Lail", "Ad-Duha", "Al-Insyirah", "At-Tin", "Al-Alaq", "Al-Qadr", "Al-Bayyinah", "Az-Zalzalah", "Al-Adiyat", "Al-Qari'ah", "At-Takasur", "Al-Asr", "Al-Humazah", "Al-Fil", "Quraisy", "Al-Ma'un", "Al-Kautsar", "Al-Kafirun", "An-Nasr", "Al-Lahab", "Al-Ikhlas", "Al-Falaq", "An-Nas"];
+    
+    // UPDATED TEMPLATE HABITS TO INCLUDE FASTING
+    const templateHabits = [
+      {id:'fasting', name:'Puasa Hari Ini', category:'Special', icon:'moon', done:false}, 
+      {id:'sw1', name:'Subuh', category:'Shalat Wajib', icon:'zap', done:false},{id:'sw2', name:'Dzuhur', category:'Shalat Wajib', icon:'zap', done:false},{id:'sw3', name:'Ashar', category:'Shalat Wajib', icon:'zap', done:false},{id:'sw4', name:'Maghrib', category:'Shalat Wajib', icon:'zap', done:false},{id:'sw5', name:'Isya', category:'Shalat Wajib', icon:'zap', done:false},{id:'ss1', name:'Tahajud', category:'Sholat Sunnah', icon:'moon', done:false},{id:'ss2', name:'Dhuha', category:'Sholat Sunnah', icon:'sun', done:false},{id:'ss3', name:'Rawatib', category:'Sholat Sunnah', icon:'layers', done:false},{id:'ss4', name:'Witir', category:'Sholat Sunnah', icon:'sparkles', done:false},{id:'ss5', name:'Tarawih', category:'Sholat Sunnah', icon:'stars', done:false},{id:'rc1', name:'Baca Quran', category:'Ramadhan Challenger', icon:'book', done:false},{id:'rc2', name:'Dzikir', category:'Ramadhan Challenger', icon:'smile', done:false},{id:'rc3', name:'Sedekah', category:'Ramadhan Challenger', icon:'heart', done:false},{id:'rc4', name:'Sholawat', category:'Ramadhan Challenger', icon:'heart', done:false},{id:'rc5', name:'Sahur', category:'Ramadhan Challenger', icon:'sun', done:false}
+    ];
+    
+    // THEMES DATA
+    const APP_THEMES = {
+        default: { primary: '#a855f7', secondary: '#10b981', gradient: 'linear-gradient(135deg, #9333ea 0%, #d8b4fe 100%)', label: 'Default' },
+        ocean:   { primary: '#0ea5e9', secondary: '#06b6d4', gradient: 'linear-gradient(135deg, #0284c7 0%, #7dd3fc 100%)', label: 'Samudra' },
+        earth:   { primary: '#d97706', secondary: '#84cc16', gradient: 'linear-gradient(135deg, #b45309 0%, #bef264 100%)', label: 'Bumi' },
+        sunset:  { primary: '#f43f5e', secondary: '#f59e0b', gradient: 'linear-gradient(135deg, #e11d48 0%, #fcd34d 100%)', label: 'Senja' }
+    };
+    
+    function safeJSONParse(str, fallback) {
+        if (!str) return fallback;
+        try {
+            const parsed = JSON.parse(str);
+            return parsed !== null ? parsed : fallback;
+        } catch (e) {
+            console.warn("Data corrupted, resetting:", e);
+            return fallback;
+        }
+    }
+
+    let state = {
+      user: null, 
+      activeDay: safeJSONParse(localStorage.getItem('ram_active_day'), 1),
+      dailyHabits: safeJSONParse(localStorage.getItem('ram_daily_habits'), {}), 
+      goals: safeJSONParse(localStorage.getItem('ram_custom_goals'), []),
+      journals: safeJSONParse(localStorage.getItem('ram_journals'), {}), 
+      quranLog: safeJSONParse(localStorage.getItem('khodim_quran_log_gz'), Array(30).fill(null).map(() => Array(5).fill(false))),
+      juzLog: safeJSONParse(localStorage.getItem('ram_juz_log'), Array(30).fill(false)),
+      manualLog: safeJSONParse(localStorage.getItem('ram_manual_log'), []),
+      adzanSettings: safeJSONParse(localStorage.getItem('ram_adzan_settings'), { active: { Fajr: true, Dhuhr: true, Asr: true, Maghrib: true, Isha: true }, notificationEnabled: true }), 
+      notifiedPrayers: [], 
+      chartValues: [50, 75, 60, 95, 85, 90, 0], 
+      profile: safeJSONParse(localStorage.getItem('khodim_profile'), { displayName: 'Akhi Ramadhan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ramadhan' }),
+      khatamTarget: safeJSONParse(localStorage.getItem('ram_khatam_target'), 1), 
+      prayerTimes: null, 
+      gsUrl: localStorage.getItem('khodim_gs_url') || '',
+      remindersEnabled: localStorage.getItem('ram_reminders') !== 'false', 
+      authMode: 'login',
+      lastLocation: safeJSONParse(localStorage.getItem('ram_last_location'), null),
+      theme: localStorage.getItem('ram_theme') || 'default' // NEW: Theme State
+    };
+    let dailyChart = null, monthlyTrendChart = null;
+    
+    let currentHabitFilter = 'all';
+    let currentQuranTab = 'juz'; 
+
+    window.currentGoalType = 'nominal'; 
+    window.currentGoalValue = 0;
+
+    window.setGoalType = (type) => {
+        window.currentGoalType = type;
+        const btnNom = document.getElementById('type-nominal');
+        const btnNum = document.getElementById('type-numeric');
+        const unitWrap = document.getElementById('unit-wrapper');
+        const inputVal = document.getElementById('sw-target');
+        
+        if(type === 'nominal') {
+            btnNom.classList.add('active');
+            btnNum.classList.remove('active');
+            unitWrap.classList.add('hidden');
+            if(window.currentGoalValue < 1000) window.currentGoalValue = 50000;
+        } else {
+            btnNum.classList.add('active');
+            btnNom.classList.remove('active');
+            unitWrap.classList.remove('hidden');
+            if(window.currentGoalValue > 1000) window.currentGoalValue = 1;
+        }
+        updateGoalDisplay();
+    };
+
+    window.adjustGoalValue = (direction) => {
+        const step = window.currentGoalType === 'nominal' ? 50000 : 1;
+        window.currentGoalValue = Math.max(0, window.currentGoalValue + (step * direction));
+        updateGoalDisplay();
+    };
+
+    function updateGoalDisplay() {
+        const input = document.getElementById('sw-target');
+        if(window.currentGoalType === 'nominal') {
+            input.value = "Rp " + formatNumber(window.currentGoalValue);
+        } else {
+            input.value = window.currentGoalValue;
+        }
+    }
+
+    function initUser() { 
+        loadDailyData(); 
+        setAppTheme(state.theme); // Apply theme on init
+        document.addEventListener('click', unlockAudioContext, { once: true });
+        document.addEventListener('touchstart', unlockAudioContext, { once: true });
+
+        if(localStorage.getItem('khodim_active_session')) { 
+            state.user = safeJSONParse(localStorage.getItem('khodim_active_session'), null); 
+            if(state.user) showApp(); 
+        } 
+    }
+
+    function unlockAudioContext() {
+        const audio = document.getElementById('adzan-audio');
+        if (audio && !state.audioAllowed) {
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                state.audioAllowed = true;
+            }).catch(e => { 
+                console.log("Audio unlock prevented yet", e); 
+            });
+        }
+    }
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ar-SA';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        } else {
+            Swal.fire({icon: 'error', title: 'Maaf', text: 'Fitur suara tidak didukung di browser ini.', background:'#020617', color:'#fff'});
+        }
+    }
+
+    function showApp() { 
+        document.getElementById('auth-screen').classList.add('hidden'); 
+        document.getElementById('main-app').classList.remove('hidden'); 
+        populateSurahDropdowns(); 
+        renderThemeSelector();
+        const hF=document.getElementById('home-date-filter'), rF=document.getElementById('report-day-filter'), uI=document.getElementById('cfg-gs-url'); 
+        if(uI) uI.value=state.gsUrl; 
+        if(hF){ hF.innerHTML=''; for(let i=1;i<=30;i++){const o=document.createElement('option');o.value=i;o.innerText=`Hari ke-${i}`;if(i===state.activeDay)o.selected=true;hF.appendChild(o);} } 
+        if(rF){ rF.innerHTML='<option value="all">Semua Hari</option>'; for(let i=1;i<=30;i++){const o=document.createElement('option');o.value=i;o.innerText=`Hari ${i}`;rF.appendChild(o);} } 
+        updateQuranPlanner(state.khatamTarget); 
+        renderHabits(); renderMonthlyTable(); renderGoals(); renderDuaList(); renderJournal(); renderManualLog(); updateUI(); updateDate(); 
+        detectLocation(); 
+        generateAdvice();
+        setTimeout(runBackgroundSystem, 2000); 
+        requestNotificationPermission();
+        if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(e => console.log('Wake Lock denied', e));
+    }
+    
+    function saveDailyData() { localStorage.setItem('ram_daily_habits', JSON.stringify(state.dailyHabits)); localStorage.setItem('ram_custom_goals', JSON.stringify(state.goals)); localStorage.setItem('ram_journals', JSON.stringify(state.journals)); localStorage.setItem('khodim_quran_log_gz', JSON.stringify(state.quranLog)); localStorage.setItem('ram_juz_log', JSON.stringify(state.juzLog)); localStorage.setItem('ram_manual_log', JSON.stringify(state.manualLog)); localStorage.setItem('ram_adzan_settings', JSON.stringify(state.adzanSettings)); localStorage.setItem('ram_theme', state.theme); }
+    function loadDailyData() { 
+        state.dailyHabits=safeJSONParse(localStorage.getItem('ram_daily_habits'), {}); 
+        state.goals=safeJSONParse(localStorage.getItem('ram_custom_goals'), []); 
+        state.journals=safeJSONParse(localStorage.getItem('ram_journals'), {}); 
+        state.quranLog=safeJSONParse(localStorage.getItem('khodim_quran_log_gz'), Array(30).fill(null).map(() => Array(5).fill(false))); 
+        state.juzLog=safeJSONParse(localStorage.getItem('ram_juz_log'), Array(30).fill(false)); 
+        state.manualLog=safeJSONParse(localStorage.getItem('ram_manual_log'), []); 
+        state.adzanSettings=safeJSONParse(localStorage.getItem('ram_adzan_settings'), { active: { Fajr: true, Dhuhr: true, Asr: true, Maghrib: true, Isha: true }, notificationEnabled: true });
+        state.theme = localStorage.getItem('ram_theme') || 'default';
+    }
+    function formatNumber(n) { return n ? n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "0"; }
+    function cleanNumber(s) { return s ? s.toString().replace(/\./g, "") : 0; }
+    function parseTimeStr(ts) { if(!ts) return null; const [h, m] = ts.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); return d; }
+    function navTo(t) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); if (document.getElementById('tab-' + t)) document.getElementById('tab-' + t).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); if (document.getElementById('btn-' + t)) document.getElementById('btn-' + t).classList.add('active'); if (t === 'history') switchReportView('harian'); if (t === 'progress') { renderMonthlyTable(); renderJuzList(); renderManualLog(); } if (t === 'goals') renderGoals(); if (t === 'duas') renderDuaList(); if (t === 'settings') renderJournal(); lucide.createIcons(); }
+    
+    // --- RESTORED: addNewGoal ---
+    window.addNewGoal = function() {
+        Swal.fire({
+            title: 'Buat Target Baru',
+            html: `
+                <div class="space-y-4 text-left">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Nama Target</label>
+                        <input id="sw-title" class="input-field text-sm w-full" placeholder="Contoh: Sedekah Jumat / Khatam Quran">
+                    </div>
+                    
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tipe Target</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="type-nominal" class="p-3 rounded-lg border border-slate-600 text-xs font-bold text-slate-400 hover:bg-slate-800 transition-all goal-type-btn" onclick="setGoalType('nominal')">💰 Nominal (Rp)</button>
+                            <button type="button" id="type-numeric" class="p-3 rounded-lg border border-slate-600 text-xs font-bold text-slate-400 hover:bg-slate-800 transition-all goal-type-btn" onclick="setGoalType('numeric')">🔢 Angka (Qty)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Jumlah Target</label>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="adjustGoalValue(-1)" class="w-12 h-12 bg-slate-800 rounded-xl border border-slate-700 text-white text-xl font-bold active:scale-90 transition-transform">−</button>
+                            <input id="sw-target" type="text" class="input-field text-center font-bold text-lg flex-1" value="0" readonly>
+                            <button type="button" onclick="adjustGoalValue(1)" class="w-12 h-12 bg-purple-600 rounded-xl text-white text-xl font-bold shadow-lg active:scale-90 transition-transform">+</button>
+                        </div>
+                    </div>
+
+                    <div id="unit-wrapper" class="hidden">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Satuan</label>
+                        <input id="sw-unit" class="input-field text-sm w-full" placeholder="Kali / Juz / Halaman">
+                    </div>
+                </div>
+            `,
+            background: '#020617',
+            color: '#fff',
+            showCancelButton: true,
+            confirmButtonColor: '#a855f7',
+            cancelButtonColor: '#334155',
+            confirmButtonText: 'Simpan Target',
+            cancelButtonText: 'Batal',
+            didOpen: () => {
+                window.currentGoalValue = 0;
+                setGoalType('nominal'); 
+            },
+            preConfirm: () => {
+                const title = document.getElementById('sw-title').value;
+                const unit = window.currentGoalType === 'nominal' ? 'Rp' : document.getElementById('sw-unit').value;
+                
+                if (!title) return Swal.showValidationMessage('Judul tidak boleh kosong');
+                if (window.currentGoalValue <= 0) return Swal.showValidationMessage('Target harus lebih dari 0');
+                if (window.currentGoalType === 'numeric' && !unit) return Swal.showValidationMessage('Satuan harus diisi');
+
+                return {
+                    id: Date.now(),
+                    title: title,
+                    target: window.currentGoalValue,
+                    unit: unit,
+                    current: 0,
+                    type: window.currentGoalType
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                state.goals.push(result.value);
+                saveDailyData();
+                renderGoals();
+                Swal.fire({title: 'Target Dibuat!', icon: 'success', background: '#020617', color: '#fff', confirmButtonColor: '#a855f7', timer: 1500, showConfirmButton: false});
+            }
+        });
+    };
+
+    // --- THEME & BADGE LOGIC (NEW) ---
+    function setAppTheme(themeKey) {
+        state.theme = themeKey;
+        const t = APP_THEMES[themeKey] || APP_THEMES.default;
+        
+        document.documentElement.style.setProperty('--primary-main', t.primary);
+        document.documentElement.style.setProperty('--primary-sub', t.secondary);
+        document.documentElement.style.setProperty('--app-gradient', t.gradient);
+        
+        saveDailyData();
+        renderThemeSelector();
+    }
+
+    function renderThemeSelector() {
+        const c = document.getElementById('theme-selector-container');
+        if(!c) return;
+        c.innerHTML = '';
+        Object.keys(APP_THEMES).forEach(key => {
+            const t = APP_THEMES[key];
+            const isActive = state.theme === key;
+            const btn = document.createElement('div');
+            btn.className = `theme-btn ${isActive ? 'selected' : ''}`;
+            btn.style.setProperty('--theme-bg', t.primary);
+            btn.style.setProperty('--theme-accent', t.secondary);
+            btn.innerHTML = `<div class="theme-preview"></div>`;
+            btn.onclick = () => setAppTheme(key);
+            c.appendChild(btn);
+        });
+    }
+
+    function calculateBadges() {
+        let totalFasting = 0;
+        let totalSubuh = 0;
+        let totalTarawih = 0;
+        let totalSedekah = 0;
+        let juzDone = state.juzLog.filter(x => x).length;
+
+        for(let i=1; i<=30; i++) {
+            const d = state.dailyHabits[`day${i}`];
+            if(d) {
+                if(d.find(x => x.id === 'fasting' && x.done)) totalFasting++;
+                if(d.find(x => x.name === 'Subuh' && x.done)) totalSubuh++;
+                if(d.find(x => x.name === 'Tarawih' && x.done)) totalTarawih++;
+                if(d.find(x => x.name === 'Sedekah' && x.done)) totalSedekah++;
+            }
+        }
+
+        return [
+            { id: 'subuh', title: 'Pejuang Subuh', desc: 'Tidak pernah telat Subuh', icon: 'sunrise', unlocked: totalSubuh >= state.activeDay && state.activeDay > 3 },
+            { id: 'fasting', title: '30 Hari Full', desc: 'Puasa sebulan penuh', icon: 'moon', unlocked: totalFasting >= 29 },
+            { id: 'khatam', title: 'Hafiz Quran', desc: 'Khatam 30 Juz', icon: 'book-open', unlocked: juzDone >= 30 },
+            { id: 'sedekah', title: 'Ahli Sedekah', desc: 'Rajin bersedekah', icon: 'heart-handshake', unlocked: totalSedekah >= 10 }
+        ];
+    }
+
+    function renderBadges() {
+        const c = document.getElementById('achievement-badges-grid');
+        if(!c) return;
+        const badges = calculateBadges();
+        c.innerHTML = '';
+        badges.forEach(b => {
+            const div = document.createElement('div');
+            div.className = `badge-card ${b.unlocked ? 'unlocked' : ''}`;
+            div.innerHTML = `
+                <div class="badge-icon"><i data-lucide="${b.icon}"></i></div>
+                <div class="badge-title">${b.title}</div>
+                <div class="badge-desc">${b.desc}</div>
+            `;
+            c.appendChild(div);
+        });
+        lucide.createIcons();
+    }
+
+    function renderGoals() { 
+        const c=document.getElementById('goals-list-container'); if(!c) return; c.innerHTML=''; 
+        state.goals.forEach((g,i)=>{ 
+            if(!g.type) g.type = (g.unit === 'Rp' || g.unit === 'IDR') ? 'nominal' : 'numeric';
+            const p=Math.min(Math.round((g.current/g.target)*100),100); 
+            const formattedCurrent = g.type === 'nominal' ? 'Rp ' + formatNumber(g.current) : formatNumber(g.current);
+            const formattedTarget = g.type === 'nominal' ? 'Rp ' + formatNumber(g.target) : formatNumber(g.target) + ' ' + g.unit;
+            const div=document.createElement('div'); div.className='goal-card glass-card p-5 mb-4'; 
+            div.innerHTML=`<div class="flex justify-between items-start text-white"><div><h4 class="text-sm font-black uppercase tracking-wide">${g.title}</h4><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">${formattedCurrent} / ${formattedTarget}</p></div><div class="flex gap-2"><button onclick="deleteGoal(${i})" class="text-red-500/50 p-2 active:bg-red-500/20 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div><div class="bg-black/30 h-3 rounded-full overflow-hidden mt-3"><div class="bg-gradient-to-r from-purple-500 to-emerald-400 h-full shadow-[0_0_10px_rgba(168,85,247,0.5)]" style="width:${p}%"></div></div><div class="flex justify-between items-center mt-4"><span class="text-xs font-black text-emerald-400">${p}%</span><div class="flex gap-3"><button onclick="updateGoalProgress(${i},-1)" class="w-10 h-10 rounded-xl bg-slate-800 text-white font-bold active:scale-90 transition-transform">-</button><button onclick="updateGoalProgress(${i},1)" class="w-10 h-10 rounded-xl bg-purple-600 text-white font-bold shadow-lg active:scale-90 transition-transform">+</button></div></div>`; c.appendChild(div); 
+        }); 
+        lucide.createIcons(); 
+    }
+    function updateGoalProgress(i, direction) { const g = state.goals[i]; if(!g.type) g.type = (g.unit === 'Rp') ? 'nominal' : 'numeric'; const step = g.type === 'nominal' ? 50000 : 1; g.current = Math.max(0, g.current + (step * direction)); saveDailyData(); renderGoals(); }
+    function deleteGoal(i) { Swal.fire({title:'Hapus Target?', text:"Tidak bisa dikembalikan.", icon:'warning', showCancelButton:true, background:'#020617', color:'#fff', confirmButtonColor:'#d33', cancelButtonColor:'#334155', confirmButtonText:'Ya, Hapus!'}).then(r=>{if(r.isConfirmed){state.goals.splice(i,1);saveDailyData(); renderGoals(); Swal.fire({title:'Target Dihapus!',icon:'success',background:'#020617',color:'#fff',confirmButtonColor:'#a855f7',timer:1500,showConfirmButton:false});}}); }
+
+    function filterHabits(category) { currentHabitFilter = category; renderHabits(); const container = document.getElementById('habit-container'); if(container) { container.scrollIntoView({behavior: 'smooth'}); } }
+
+    function updateHomeSync() {
+        if(!state.dailyHabits[`day${state.activeDay}`]) state.dailyHabits[`day${state.activeDay}`] = JSON.parse(JSON.stringify(templateHabits));
+        const h = state.dailyHabits[`day${state.activeDay}`];
+        const wajibList = h.filter(x => x.category === 'Shalat Wajib'); const wajibDone = wajibList.filter(x => x.done).length;
+        document.getElementById('home-stat-wajib').innerText = `${wajibDone} / ${wajibList.length}`;
+        const sunnahList = h.filter(x => x.category === 'Sholat Sunnah'); const sunnahDone = sunnahList.filter(x => x.done).length;
+        document.getElementById('home-stat-sunnah').innerText = `${sunnahDone} / ${sunnahList.length}`;
+        const chalList = h.filter(x => x.category === 'Ramadhan Challenger'); const chalDone = chalList.filter(x => x.done).length;
+        document.getElementById('home-stat-challenger').innerText = `${chalDone} / ${chalList.length}`;
+        let quranText = "0 / 30";
+        if (currentQuranTab === 'juz') { const juzDone = state.juzLog.filter(x => x).length; quranText = `${juzDone} / 30 Juz`; } 
+        else if (currentQuranTab === 'page') { let pageDone = 0; state.quranLog.forEach(d => d.forEach(p => { if(p) pageDone++ })); quranText = `${pageDone} / 604 Hal`; } 
+        else if (currentQuranTab === 'manual') { if (state.manualLog.length > 0) { quranText = `${state.manualLog[0].endSurah}:${state.manualLog[0].endAyat}`; } else { quranText = "Belum Ada"; } }
+        const quranEl = document.getElementById('home-stat-quran'); if(quranEl) { quranEl.innerText = quranText; quranEl.title = quranText; }
+    }
+
+    function renderHabits() { 
+        const c = document.getElementById('habit-container'); if(!c) return; c.innerHTML=''; 
+        if(!state.dailyHabits[`day${state.activeDay}`]) state.dailyHabits[`day${state.activeDay}`] = JSON.parse(JSON.stringify(templateHabits)); 
+        const h = state.dailyHabits[`day${state.activeDay}`]; 
+        const fastingHabit = h.find(x => x.category === 'Special' && x.id === 'fasting');
+        if(fastingHabit) {
+            const fastingCard = document.createElement('div');
+            fastingCard.className = `glass-card p-4 flex items-center justify-between border mb-4 transition-all duration-300 ${fastingHabit.done ? 'bg-emerald-900/30 border-emerald-500/50' : 'border-white/10'}`;
+            fastingCard.innerHTML = `<div class="flex items-center gap-3"><div class="p-2 rounded-xl ${fastingHabit.done ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}"><i data-lucide="moon" class="w-5 h-5"></i></div><div><h4 class="text-sm font-black uppercase tracking-wide text-white">Status Puasa</h4><p class="text-[10px] font-bold ${fastingHabit.done ? 'text-emerald-400' : 'text-slate-400'}">${fastingHabit.done ? 'Sedang Berpuasa' : 'Tidak Berpuasa'}</p></div></div><div onclick="toggleFastingStatus('${fastingHabit.id}')" class="cursor-pointer"><div class="w-12 h-7 rounded-full relative transition-colors ${fastingHabit.done ? 'bg-emerald-500' : 'bg-slate-700'}"><div class="w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${fastingHabit.done ? 'left-6' : 'left-1'}"></div></div></div>`;
+            c.appendChild(fastingCard);
+        }
+        if(currentHabitFilter !== 'all') {
+            const filterDiv = document.createElement('div'); filterDiv.className = 'flex justify-between items-center mb-3 px-1';
+            filterDiv.innerHTML = `<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter: ${currentHabitFilter}</span><button onclick="filterHabits('all')" class="text-[10px] text-purple-400 font-bold uppercase underline active:text-white transition-colors">Tampilkan Semua</button>`;
+            c.appendChild(filterDiv);
+        }
+        ['Shalat Wajib', 'Sholat Sunnah', 'Ramadhan Challenger'].forEach(cat => { 
+            if (currentHabitFilter !== 'all' && currentHabitFilter !== cat) return;
+            const list = h.filter(x => x.category === cat); if(list.length === 0) return; 
+            const div = document.createElement('div'); div.className = 'space-y-3 mb-4'; 
+            div.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest pl-2 border-l-2 border-purple-500 mb-2">${cat}</h4>`; 
+            list.forEach(x => { 
+                const idx = h.findIndex(item => item.id === x.id); 
+                const item = document.createElement('div'); item.className = `habit-item shadow-sm ${x.done ? 'completed' : ''}`; 
+                item.onclick = () => { h[idx].done = !h[idx].done; saveDailyData(); renderHabits(); updateUI(); generateAdvice(); }; 
+                item.innerHTML = `<div class="w-9 h-9 rounded-xl bg-indigo-900/40 flex items-center justify-center mr-3.5 shadow-sm"><i data-lucide="${x.icon}" class="w-5 h-5 text-purple-400"></i></div><div class="flex-1"><h4 class="text-xs font-extrabold text-white">${x.name}</h4></div><div class="w-6.5 h-6.5 rounded-lg border-2 border-slate-700 flex items-center justify-center transition-all ${x.done ? 'bg-emerald-500 border-emerald-500 text-white' : ''}">${x.done ? '✔️' : ''}</div>`; 
+                div.appendChild(item); 
+            }); 
+            c.appendChild(div); 
+        }); 
+        lucide.createIcons(); 
+    }
+
+    function toggleFastingStatus(id) { const h = state.dailyHabits[`day${state.activeDay}`]; const item = h.find(x => x.id === id); if(item) { item.done = !item.done; saveDailyData(); renderHabits(); updateUI(); } }
+    function renderMonthlyTable() { const b=document.getElementById('progress-table-body'); if(!b) return; b.innerHTML=''; for(let i=0; i<30; i++) { const r=document.createElement('tr'); let c=`<td class="font-black text-slate-400 text-[10px] py-4 border-r border-white/5">${i+1}</td>`; for(let j=0; j<5; j++) { const chk=state.quranLog[i][j], k=(i*5)+j; const label = k===149?`${Math.floor(k*(604/150))+1}-604`:`${Math.floor(k*(604/150))+1}-${Math.floor((k+1)*(604/150))}`; c+=`<td><div class="flex flex-col items-center gap-1"><div class="check-box ${chk?'checked':''}" onclick="toggleQuranLog(${i}, ${j})">${chk?'<i data-lucide="check" class="w-3.5 h-3.5"></i>':''}</div><span class="text-[8px] font-bold text-slate-300">${label}</span></div></td>`; } r.innerHTML=c; b.appendChild(r); } lucide.createIcons(); }
+    function renderDuaList() { const c=document.getElementById('dua-list-container'); if(!c) return; c.innerHTML=''; ramadhanDuas.forEach(d => { const div=document.createElement('div'); div.className='dua-card-list space-y-4'; div.innerHTML=`<div class="flex justify-between items-center mb-1"><p class="text-[9px] font-black uppercase text-purple-400 tracking-widest text-white">Doa Hari Ke-${d.day}</p><button onclick="speakText('${d.arabic}')" class="p-2 bg-purple-500/20 rounded-full active:scale-90 transition-transform"><i data-lucide="volume-2" class="w-4 h-4 text-purple-400"></i></button></div><p class="text-xl font-serif text-right text-white leading-loose">${d.arabic}</p><p class="text-xs italic text-slate-400">${d.latin}</p><p class="text-sm font-bold text-emerald-400 leading-snug">"${d.meaning}"</p>`; c.appendChild(div); }); lucide.createIcons(); }
+    function calculateKhatamPrediction() { let totalPages = 0; state.quranLog.forEach(day => day.forEach(prayer => { if(prayer) totalPages++; })); const juzPages = state.juzLog.filter(x => x).length * 20; const totalRead = Math.max(totalPages, juzPages); const daysPassed = Math.max(1, state.activeDay); const avgSpeed = totalRead / daysPassed; const predictionBox = document.getElementById('khatam-prediction-text'); if(!predictionBox) return; if(avgSpeed < 0.5) { predictionBox.innerHTML = "Belum cukup data. Ayo mulai baca minimal 1 halaman!"; } else { const remainingPages = 604 - totalRead; if(remainingPages <= 0) { predictionBox.innerHTML = "<span class='text-emerald-300'>Masya Allah! Antum sudah Khatam.</span>"; } else { const daysNeeded = Math.ceil(remainingPages / avgSpeed); const finishDay = state.activeDay + daysNeeded; let finishText = ""; if(finishDay > 30) { finishText = `di Syawal (H+${finishDay-30} Lebaran)`; } else { finishText = `pada Hari ke-${finishDay} Ramadhan`; } predictionBox.innerHTML = `Speed: <b>${avgSpeed.toFixed(1)} hal/hari</b>. <br>Insya Allah khatam <b>${finishText}</b>.`; } } }
+    function generateAdvice() { let sunnahMissed = 0; let wajibMissed = 0; let totalDays = 0; for(let i = Math.max(1, state.activeDay - 3); i < state.activeDay; i++) { totalDays++; const h = state.dailyHabits[`day${i}`]; if(h) { const w = h.filter(x => x.category === 'Shalat Wajib' && !x.done).length; const s = h.filter(x => x.category === 'Sholat Sunnah' && !x.done).length; wajibMissed += w; sunnahMissed += s; } } const box = document.getElementById('smart-recommendation-text'); if (!box) return; if (state.activeDay === 1) { box.innerText = "Bismillah, mari mulai hari pertama dengan Bismillah dan Niat yang kuat!"; return; } if (wajibMissed > 0) { box.innerHTML = "Prioritas Utama: <span class='text-red-300'>Jaga Sholat Wajib 5 Waktu</span>. Jangan sampai bolong ya akhi!"; } else if (sunnahMissed > (totalDays * 3)) { box.innerHTML = "Mulai Ringan: <span class='text-emerald-300'>Rutin Qobliyah Subuh</span> saja dulu untuk membangun kebiasaan."; } else { box.innerHTML = "Masya Allah Tabarakallah! <span class='text-purple-300'>Pertahankan istiqomah</span>, coba tambah Sedekah hari ini."; } }
+    function renderJournal() { const entry = state.journals[`day${state.activeDay}`] || { mood: '', text: '' }; const input = document.getElementById('journal-input'); if (input) input.value = entry.text; if(entry.mood) setMood(entry.mood); }
+    function renderManualLog() { const c=document.getElementById('manual-log-list'); if(!c) return; c.innerHTML=''; if(state.manualLog.length===0){ c.innerHTML='<p class="text-center text-xs text-slate-500 py-4 italic">Belum ada catatan.</p>'; return; } state.manualLog.forEach(item => { const div = document.createElement('div'); div.className = 'glass-card p-4 flex justify-between items-center border border-white/5 active:bg-slate-900 transition-colors'; div.innerHTML = `<div><div class="flex items-center gap-2 mb-1.5 flex-wrap"><span class="text-xs font-bold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg">${item.startSurah}:${item.startAyat}</span><i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-500"></i><span class="text-xs font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-lg">${item.endSurah}:${item.endAyat}</span></div><p class="text-[10px] text-slate-400 font-medium pl-1">${item.timestamp}</p></div><button onclick="deleteManualEntry(${item.id})" class="text-slate-500 hover:text-red-400 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`; c.appendChild(div); }); lucide.createIcons(); }
+    function renderJuzList() { const c=document.getElementById('juz-list-container'); if(!c)return; c.innerHTML=''; let completedCount = 0; state.juzLog.forEach((d,i)=>{ if(d) completedCount++; const t=document.createElement('div'); t.className=`juz-tile ${d?'checked':''}`; t.onclick=()=>toggleJuz(i); t.innerHTML=`<div class="juz-checkbox">${d?'<i data-lucide="check" class="w-4 h-4 text-white"></i>':''}</div><span class="juz-text">Juz ${i+1}</span>`; c.appendChild(t); }); const pBar = document.getElementById('juz-progress-bar'); const pTxt = document.getElementById('juz-progress-percent'); const cTxt = document.getElementById('juz-completed-count'); const pct = Math.round((completedCount / 30) * 100); if(pBar) pBar.style.width = `${pct}%`; if(pTxt) pTxt.innerText = `${pct}%`; if(cTxt) cTxt.innerText = completedCount; lucide.createIcons(); updateMonthlyUI(); }
+    function generateDailyReport() { const c=document.getElementById('daily-log-container'); if(!c) return; c.innerHTML=''; const f=document.getElementById('report-day-filter').value; for(let i=1;i<=30;i++){ if(f!=='all' && parseInt(f)!==i) continue; const h=state.dailyHabits[`day${i}`]||JSON.parse(JSON.stringify(templateHabits)); const dc=h.filter(x=>x.done).length; const p=Math.round((dc/h.length)*100); const card=document.createElement('div'); card.className='glass-card p-5 mb-4 border border-white/5'; const l=h.filter(x=>x.category==='Shalat Wajib').map(x=>`<div class="report-log-item text-white flex flex-col items-center gap-1"><div class="w-8 h-8 rounded-full flex items-center justify-center ${x.done?'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30':'bg-slate-800 text-slate-500 border border-slate-700'}">${x.done?'✔️':'❌'}</div><span class="text-[9px] font-bold text-slate-400 uppercase">${x.name.substring(0,3)}</span></div>`).join(''); card.innerHTML=`<div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10 text-white"><p class="text-xs font-black text-purple-400 uppercase tracking-widest">${i} RAMADHAN</p><span class="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">${p}% Tuntas</span></div><div class="report-log-grid">${l}</div>`; c.appendChild(card); } lucide.createIcons(); }
+    function changeActiveDay(day) { state.activeDay=parseInt(day); localStorage.setItem('ram_active_day', state.activeDay); renderHabits(); renderJournal(); updateUI(); updateDate(); generateAdvice(); }
+    function updateUI() { updateMonthlyUI(); updateHomeSync(); if(!state.dailyHabits[`day${state.activeDay}`]) state.dailyHabits[`day${state.activeDay}`]=JSON.parse(JSON.stringify(templateHabits)); const h=state.dailyHabits[`day${state.activeDay}`]; if(document.getElementById('user-name-display')) document.getElementById('user-name-display').innerText=state.profile.displayName.split(' ')[0]; if(document.getElementById('profile-display-name-val')) document.getElementById('profile-display-name-val').innerText=state.profile.displayName; const dayJournal = state.journals[`day${state.activeDay}`]; document.querySelectorAll('.mood-btn').forEach(btn => { if (dayJournal && dayJournal.mood) { btn.classList.toggle('active', dayJournal.mood === btn.id.split('-')[1]); } else { btn.classList.remove('active'); } }); }
+    function updateDate() { const mD=document.getElementById('header-masehi-date'), hD=document.getElementById('header-hijri-date'), cD=document.getElementById('card-hijri-display'); const now=new Date(); const ds=now.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase(); if(mD) mD.innerText=ds; if(hD) hD.innerText=`${state.activeDay} RAMADHAN 1447 H`; if(cD) cD.innerText=`${state.activeDay} RAMADHAN 1447 H`; const q=document.getElementById('daily-inspiration-text'); if(q) q.innerText=`"${ramadhanQuotes[(state.activeDay-1)%30]}"`; }
+    function updateMonthlyUI() { let dC=0; state.quranLog.forEach(d=>d.forEach(p=>{if(p)dC++})); const dp=Math.round((dC/150)*604), sisa=604-dp, pc=Math.min(Math.round((dC/150)*100),100); const cE=document.getElementById('total-page-count'), pE=document.getElementById('total-page-percent'), bE=document.getElementById('total-page-bar'), rsE=document.getElementById('remaining-pages-label'), sE=document.getElementById('stat-khatam'), sbE=document.getElementById('bar-khatam'); if(cE) cE.innerText=dp; if(pE) pE.innerText=pc+'%'; if(bE) bE.style.width=pc+'%'; if(rsE) rsE.innerText=`SISA ${sisa} Hal`; if(sE) sE.innerText=`${dp}/604`; if(sbE) sbE.style.width=pc+'%'; let pD = 0, eS = 0; for(let i=1; i<=30; i++){ const h = state.dailyHabits[`day${i}`]; if(h && h.filter(x=>x.done).length > 0){ pD++; eS += (h.filter(x=>x.done).length/h.length); } } let qD = 0; state.quranLog.forEach(d=>d.forEach(p=>{ if(p) qD++; })); const statTotalPuasa = document.getElementById('stat-total-puasa'); if (statTotalPuasa) statTotalPuasa.innerText = pD; const statTotalKhatam = document.getElementById('stat-total-khatam'); if (statTotalKhatam) statTotalKhatam.innerText = Math.min(Math.round((qD/150)*100), 100) + '%'; const statAvgEff = document.getElementById('stat-avg-eff'); if (statAvgEff) statAvgEff.innerText = (pD > 0 ? Math.round((eS/pD)*100) : 0) + '%'; const statGoalsDone = document.getElementById('stat-goals-done'); if (statGoalsDone) statGoalsDone.innerText = state.goals.filter(g => g.current >= g.target).length; calculateKhatamPrediction(); updateHomeSync(); renderBadges(); /* Call renderBadges() */ }
+    function toggleQuranLog(d, p) { state.quranLog[d][p]=!state.quranLog[d][p]; saveDailyData(); renderMonthlyTable(); updateMonthlyUI(); }
+    function toggleJuz(idx) { state.juzLog[idx]=!state.juzLog[idx]; saveDailyData(); renderJuzList(); updateHomeSync(); }
+    function resetJuzProgress() { Swal.fire({title:'Reset Progress Juz?', text:"Data akan dihapus permanen.", icon:'warning', showCancelButton:true, background:'#020617', color:'#fff', confirmButtonColor:'#d33', cancelButtonColor:'#334155', confirmButtonText:'Ya, Reset!'}).then(r=>{if(r.isConfirmed){state.juzLog=Array(30).fill(false);saveDailyData();renderJuzList();updateHomeSync();Swal.fire({title:'Berhasil Direset!',icon:'success',background:'#020617',color:'#fff',confirmButtonColor:'#a855f7',timer:1500,showConfirmButton:false});}}); }
+    function resetPageProgress() { Swal.fire({title:'Reset Progress Halaman?', text:"Data akan dihapus permanen.", icon:'warning', showCancelButton:true, background:'#020617', color:'#fff', confirmButtonColor:'#d33', cancelButtonColor:'#334155', confirmButtonText:'Ya, Reset!'}).then(r=>{if(r.isConfirmed){state.quranLog=Array(30).fill(null).map(()=>Array(5).fill(false));saveDailyData();renderMonthlyTable();updateHomeSync();Swal.fire({title:'Berhasil Direset!',icon:'success',background:'#020617',color:'#fff',confirmButtonColor:'#a855f7',timer:1500,showConfirmButton:false});}}); }
+    function setMood(m) { if(!state.journals[`day${state.activeDay}`]) state.journals[`day${state.activeDay}`]={mood:'',text:''}; state.journals[`day${state.activeDay}`].mood=m; saveDailyData(); document.querySelectorAll('.mood-btn').forEach(btn => { btn.classList.toggle('active', btn.id === `mood-${m}`); }); const recMap = { 'grateful': "Alhamdulillah. Sempurnakan syukurmu dengan Sedekah Subuh atau memberi iftar kepada yang berpuasa.", 'happy': "Masya Allah. Bagikan kebahagiaan dengan silaturahmi, menelepon orang tua, atau menebar salam.", 'tired': "Lelahmu insya Allah lillah. Ambil jeda sejenak, basahi lisan dengan Istighfar dan dzikir ringan.", 'productive': "Barakallah. Salurkan energimu untuk menambah hafalan surat baru atau tilawah 1 juz hari ini." }; const box = document.getElementById('ai-recommender-box'); const txt = document.getElementById('ai-recommender-text'); if(box && txt) { box.classList.remove('hidden'); box.classList.add('flex'); txt.innerText = recMap[m] || "Tetap istiqomah dalam kebaikan."; } }
+    function saveJournalEntry() { const t=document.getElementById('journal-input').value; if(!state.journals[`day${state.activeDay}`]) state.journals[`day${state.activeDay}`]={mood:'',text:''}; state.journals[`day${state.activeDay}`].text=t; saveDailyData(); Swal.fire({icon:'success',title:'Tersimpan',timer:1000,showConfirmButton:false, background:'#020617', color:'#fff'}); }
+    function checkSettingsChange() { document.getElementById('btn-save-settings').disabled=false; }
+    function saveAllSettings() { const n=document.getElementById('pref-name').value; if(n){state.profile.displayName=n;saveDailyData();updateUI();Swal.fire({title:'Profil Diperbarui!', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7', timer:1500, showConfirmButton:false});} }
+    function handleQuranPlannerSlider(val) { updateQuranPlanner(val); }
+    function updateQuranPlanner(t) { state.khatamTarget=parseInt(t); const total=604*t, pD=Math.ceil(total/30), pP=Math.ceil(pD/5); const tv=document.getElementById('khatam-target-val'); if(tv) tv.innerText=`${t} Kali`; const td=document.getElementById('target-pages-day'); if(td) td.innerText=`${pD} Halaman`; const tp=document.getElementById('target-pages-prayer'); if(tp) tp.innerText=`${pP} Halaman`; updateMonthlyUI(); }
+    function switchQuranTab(tab) { currentQuranTab = tab; ['juz','page','manual'].forEach(t => { document.getElementById(`view-quran-${t}`).classList.toggle('hidden', t!==tab); const btn=document.getElementById(`btn-quran-${t}`); if(btn) btn.classList.toggle('active', t===tab); }); if(tab==='manual') renderManualLog(); updateHomeSync(); }
+    function switchDuaTab(tab) { ['doa','niat','fiqih'].forEach(t => { document.getElementById(`view-dua-${t}`).classList.toggle('hidden', t!==tab); const btn=document.getElementById(`btn-dua-${t}`); if(btn) btn.classList.toggle('active', t===tab); }); }
+    function switchReportView(v) { document.getElementById('report-harian-view').classList.toggle('hidden', v!=='harian'); document.getElementById('report-bulanan-view').classList.toggle('hidden', v!=='bulanan'); const btnHarian = document.getElementById('btn-view-harian'); const btnBulanan = document.getElementById('btn-view-bulanan'); if (btnHarian) btnHarian.classList.toggle('active', v==='harian'); if (btnBulanan) btnBulanan.classList.toggle('active', v==='bulanan'); if(v==='bulanan'){ setTimeout(initMonthlyTrendChart,100); updateMonthlyUI(); } else { setTimeout(initDailyChart,100); generateDailyReport(); } }
+    function handleReportFilterChange(val) { generateDailyReport(); }
+    function initDailyChart() { const ctx=document.getElementById('dailyChart'); if(!ctx)return; if(dailyChart) dailyChart.destroy(); dailyChart=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:['Min','Sen','Sel','Rab','Kam','Jum','Sab'],datasets:[{label:'Efisiensi',data:state.chartValues,borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,0.1)',fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{display:false,min:0,max:100},x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10}}}}}}); }
+    function initMonthlyTrendChart() { const ctx=document.getElementById('monthlyTrendChart'); if(!ctx)return; if(monthlyTrendChart) monthlyTrendChart.destroy(); const l=Array.from({length:30},(_,i)=>i+1); const d=l.map(day=>{const h=state.dailyHabits[`day${day}`]||templateHabits;return Math.round((h.filter(x=>x.done).length/h.length)*100)}); monthlyTrendChart=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:l,datasets:[{label:'Efisiensi',data:d,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{display:false,min:0,max:100},x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:8}}}}}}); }
+    function toggleAdzanModal(show) { const m=document.getElementById('modal-adzan-settings'); if(show){m.classList.add('active');renderAdzanSettings();}else{m.classList.remove('active');} }
+    function toggleAdzanActive(p) { state.adzanSettings.active[p]=!state.adzanSettings.active[p]; saveDailyData(); renderAdzanSettings(); }
+    function requestNotificationPermission() { if (!("Notification" in window)) return; if (Notification.permission !== "granted" && Notification.permission !== "denied") { Notification.requestPermission(); } }
+    function toggleSystemNotification() { if (!("Notification" in window)) return Swal.fire({icon:'error', title:'Tidak Didukung', text:'Browser antum tidak mendukung notifikasi sistem.', background:'#020617', color:'#fff'}); if (Notification.permission === "granted") { state.adzanSettings.notificationEnabled = !state.adzanSettings.notificationEnabled; saveDailyData(); renderAdzanSettings(); } else { Notification.requestPermission().then(permission => { if (permission === "granted") { state.adzanSettings.notificationEnabled = true; saveDailyData(); renderAdzanSettings(); new Notification("Amalin App", { body: "Notifikasi Sistem Aktif", icon: "https://cdn.jsdelivr.net/gh/twbs/icons@main/icons/moon-stars-fill.svg" }); } }); } }
+    function toggleSoundEnabled() { state.adzanSettings.soundEnabled = !state.adzanSettings.soundEnabled; saveDailyData(); renderAdzanSettings(); }
+    function testSound() { const title = "Test Notifikasi"; const options = { body: "Ini adalah contoh notifikasi sholat (Silent)", icon: "https://cdn-icons-png.flaticon.com/512/4358/4358665.png", badge: "https://cdn-icons-png.flaticon.com/512/4358/4358665.png", silent: true }; if (Notification.permission === "granted") { if ('serviceWorker' in navigator && navigator.serviceWorker.controller) { navigator.serviceWorker.ready.then(function(registration) { registration.showNotification(title, options); }); } else { new Notification(title, options); } } else { Swal.fire({icon:'info', title:'Izin Diperlukan', text:'Mohon izinkan notifikasi di browser antum.', background:'#020617', color:'#fff'}); Notification.requestPermission(); } }
+    function showPrayerNotification(prayerName, time) { const title = "Waktu Sholat Telah Tiba"; const options = { body: `Telah masuk waktu Sholat ${prayerName} (${time})`, icon: "https://cdn-icons-png.flaticon.com/512/4358/4358665.png", badge: "https://cdn-icons-png.flaticon.com/512/4358/4358665.png", vibrate: [], silent: true }; if (Notification.permission === "granted") { if ('serviceWorker' in navigator && navigator.serviceWorker.controller) { navigator.serviceWorker.ready.then(function(registration) { registration.showNotification(title, options); }); } else { new Notification(title, options); } } const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, background: '#020617', color: '#fff' }); toast.fire({ icon: 'info', title: `Waktu Sholat ${prayerName}` }); }
+    function renderAdzanSettings() { const tSys = document.getElementById('toggle-sys-notif'); if(tSys) tSys.classList.toggle('active', state.adzanSettings.notificationEnabled && Notification.permission === 'granted'); const c=document.getElementById('adzan-toggle-list'); c.innerHTML=''; const lbl={'Fajr':'Subuh','Dhuhr':'Dzhur','Asr':'Ashar','Maghrib':'Maghrib','Isha':'Isya'}; ['Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(p=>{ const div=document.createElement('div'); div.className='flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-white/5'; div.innerHTML=`<span class="text-sm font-bold text-white">${lbl[p]}</span><div onclick="toggleAdzanActive('${p}')" class="adzan-toggle ${state.adzanSettings.active[p]?'active':''}"></div>`; c.appendChild(div); }); }
+    function populateSurahDropdowns() { const s1=document.getElementById('manual-surah-start'), s2=document.getElementById('manual-surah-end'); if(!s1||!s2)return; s1.innerHTML='<option value="" disabled selected>Pilih Surat Awal</option>'; s2.innerHTML='<option value="" disabled selected>Pilih Surat Akhir</option>'; SURAH_LIST.forEach((s,i)=>{ const o1=document.createElement('option'); o1.value=s; o1.text=`${i+1}. ${s}`; s1.appendChild(o1); const o2=document.createElement('option'); o2.value=s; o2.text=`${i+1}. ${s}`; s2.appendChild(o2); }); }
+    function saveManualEntry() { const s1=document.getElementById('manual-surah-start').value, a1=document.getElementById('manual-ayat-start').value, s2=document.getElementById('manual-surah-end').value, a2=document.getElementById('manual-ayat-end').value; if(!s1||!a1||!s2||!a2){Swal.fire({title:'Info',text:'Lengkapi data',icon:'warning', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});return;} const e={id:Date.now(),startSurah:s1,startAyat:a1,endSurah:s2,endAyat:a2,timestamp:new Date().toLocaleString()}; state.manualLog.unshift(e); saveDailyData(); renderManualLog(); updateHomeSync(); Swal.fire({icon:'success',title:'Disimpan',timer:800,showConfirmButton:false, background:'#020617', color:'#fff'}); }
+    function deleteManualEntry(id) { state.manualLog=state.manualLog.filter(x=>x.id!==id); saveDailyData(); renderManualLog(); updateHomeSync(); }
+    function resetManualLog() { Swal.fire({title:'Hapus Semua Catatan?', text:"Riwayat bacaan akan hilang.", icon:'warning', showCancelButton:true, background:'#020617', color:'#fff', confirmButtonColor:'#d33', cancelButtonColor:'#334155', confirmButtonText:'Ya, Hapus!'}).then(r=>{if(r.isConfirmed){state.manualLog=[];saveDailyData();renderManualLog();updateHomeSync();Swal.fire({title:'Berhasil Dihapus!',icon:'success',background:'#020617',color:'#fff',confirmButtonColor:'#a855f7',timer:1500,showConfirmButton:false});}}); }
+    
+    // AUTH FUNCTIONS (Explicitly Defined Globally)
+    window.toggleAuthMode = function() { 
+        state.authMode = state.authMode==='login'?'register':'login'; 
+        const c=document.getElementById('field-name-container'), btn=document.getElementById('btn-text'), sw=document.getElementById('auth-switch-btn'), ft=document.getElementById('auth-footer-text'); 
+        if(state.authMode==='register'){ c.classList.remove('hidden'); setTimeout(()=>c.classList.remove('opacity-0'),50); btn.innerText="DAFTAR SEKARANG"; ft.innerText="Sudah punya akun?"; sw.innerText="Masuk Sekarang"; }else{ c.classList.add('opacity-0'); setTimeout(()=>c.classList.add('hidden'),300); btn.innerText="MASUK SEKARANG"; ft.innerText="Belum punya akun?"; sw.innerText="Daftar Akun Baru"; } 
+    };
+    
+    window.handleAuthAction = function() { const btn=document.getElementById('btn-auth-action'), txt=document.getElementById('btn-text'); btn.disabled=true; txt.innerText="Memuat..."; btn.classList.add('opacity-70'); setTimeout(()=>{ if(state.authMode==='login') doLogin(); else doRegister(); },800); };
+    
+    function doRegister() { const n=document.getElementById('auth-name').value.trim(), e=document.getElementById('auth-email').value.trim(), p=document.getElementById('auth-pass').value.trim(); if(!n||!e||!p){Swal.fire({icon:'warning',title:'Data kurang', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});resetBtn();return;} const db=safeJSONParse(localStorage.getItem('khodim_users_db'), []); if(db.some(u=>u.email===e)){Swal.fire({icon:'error',title:'Email terdaftar', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});resetBtn();return;} const u={name:n.split(' ')[0],fullName:n,email:e,password:p}; db.push(u); localStorage.setItem('khodim_users_db',JSON.stringify(db)); localStorage.setItem('khodim_pending_reg',JSON.stringify(u)); state.user={name:u.name,email:u.email}; state.profile.displayName=u.fullName; localStorage.setItem('khodim_active_session',JSON.stringify(state.user)); saveDailyData(); Swal.fire({icon:'success',title:'Berhasil',showConfirmButton:false,timer:1500, background:'#020617', color:'#fff'}).then(()=>showApp()); }
+    function doLogin() { const e=document.getElementById('auth-email').value.trim(), p=document.getElementById('auth-pass').value.trim(); if(!e||!p){Swal.fire({icon:'info',title:'Data kurang', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});resetBtn();return;} const db=safeJSONParse(localStorage.getItem('khodim_users_db'), []); const u=db.find(x=>x.email===e && x.password===p); if(u){ state.user={name:u.name,email:u.email}; state.profile.displayName=u.fullName; localStorage.setItem('khodim_active_session',JSON.stringify(state.user)); saveDailyData(); Swal.fire({icon:'success',title:'Berhasil',showConfirmButton:false,timer:1500, background:'#020617', color:'#fff'}).then(()=>showApp()); localStorage.setItem('khodim_pending_login',JSON.stringify({email:u.email,status:'Success'})); setTimeout(runBackgroundSystem,500); } else { Swal.fire({icon:'error',title:'Akun tidak ditemukan', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); resetBtn(); } }
+    function resetBtn() { const btn=document.getElementById('btn-auth-action'), txt=document.getElementById('btn-text'); btn.disabled=false; txt.innerText=state.authMode==='login'?"MASUK SEKARANG":"DAFTAR SEKARANG"; btn.classList.remove('opacity-70'); }
+    function doLogout() { localStorage.removeItem('khodim_active_session'); location.reload(); }
+    window.togglePasswordVisibility = function(id, btn) { const i=document.getElementById(id); if(i.type==='password'){i.type='text';btn.innerHTML='<i data-lucide="eye-off" class="w-5 h-5"></i>';} else{i.type='password';btn.innerHTML='<i data-lucide="eye" class="w-5 h-5"></i>';} lucide.createIcons(); };
+    // ... (Share card logic same as before, simplified) ...
+    function generateShareCard(type) { document.getElementById('sc-user-name').innerText = state.profile.displayName; document.getElementById('sc-quote').innerText = ramadhanQuotes[(state.activeDay-1)%30]; const h = state.dailyHabits[`day${state.activeDay}`] || templateHabits; const fastingHabit = h.find(x => x.id === 'fasting'); const fastingEl = document.getElementById('sc-fasting-status'); if (fastingEl && fastingHabit && type === 'daily') { fastingEl.classList.remove('hidden'); fastingEl.innerHTML = `<div class="sc-fasting-icon">🌙</div><span class="sc-fasting-text">${fastingHabit.done ? 'ALHAMDULILLAH BERPUASA' : 'TIDAK BERPUASA'}</span>`; } else if (fastingEl) { fastingEl.classList.add('hidden'); } const wajibContainer = document.getElementById('sc-wajib-container'); const sunnahContainer = document.getElementById('sc-sunnah-container'); const ramaContainer = document.getElementById('sc-ramadhan-container'); const progressContainer = document.getElementById('sc-progress-container'); wajibContainer.innerHTML = ''; sunnahContainer.innerHTML = ''; ramaContainer.innerHTML = ''; progressContainer.innerHTML = ''; if(type==='daily') { document.getElementById('sc-date-label').innerText="DAILY REPORT"; document.getElementById('sc-main-title').innerHTML=`<div class="relative z-50 text-white leading-normal text-4xl font-black mb-2">HARI KE-${state.activeDay}</div><div class="text-emerald-400 relative z-50 leading-normal font-black italic text-3xl">RAMADHAN</div>`; const wList = h.filter(x => x.category === 'Shalat Wajib'); const wMap = {'Subuh':'S','Dzuhur':'D','Ashar':'A','Maghrib':'M','Isya':'I'}; wList.forEach(w => { wajibContainer.innerHTML += `<div class="sc-wajib-item"><div class="sc-wajib-icon ${w.done?'done':''}">${wMap[w.name]||w.name[0]}</div><span class="sc-wajib-label">${w.name}</span></div>`; }); const sList = h.filter(x => x.category === 'Sholat Sunnah'); if(sList.some(x=>x.done)) { sList.forEach(s => { if(s.done) addShareListItem(sunnahContainer, s.name, 'Tuntas', true); }); } else { sunnahContainer.innerHTML = '<span class="text-[10px] text-slate-500 italic">Belum ada sunnah.</span>'; } const rList = h.filter(x => x.category === 'Ramadhan Challenger'); if(rList.some(x=>x.done)) { rList.forEach(r => { if(r.done) addShareListItem(ramaContainer, r.name, 'Tuntas', true); }); } else { ramaContainer.innerHTML = '<span class="text-[10px] text-slate-500 italic">Ayo semangat!</span>'; } const quranText = getQuranProgressText(state.activeDay); progressContainer.innerHTML += `<div><div class="sc-stat-row"><span class="sc-stat-label">BACAAN HARI INI</span><span class="sc-stat-val text-emerald-400">${quranText}</span></div><div class="sc-progress-track"><div class="sc-progress-fill" style="width: 100%"></div></div></div>`; if(state.goals.length > 0) { const g = state.goals[0]; const p = Math.min(Math.round((g.current/g.target)*100), 100); progressContainer.innerHTML += `<div><div class="sc-stat-row"><span class="sc-stat-label">TARGET: ${g.title.substring(0,15)}</span><span class="sc-stat-val">${p}%</span></div><div class="sc-progress-track"><div class="sc-progress-fill" style="width: ${p}%"></div></div></div>`; } } else { document.getElementById('sc-date-label').innerText="RAPOR BULANAN"; document.getElementById('sc-main-title').innerHTML=`<div class="relative z-50 text-white leading-normal text-4xl font-black mb-2">RAMADHAN</div><div class="text-purple-400 relative z-50 leading-normal font-black italic text-3xl">REKAPITULASI</div>`; let totalWajib = 0; let totalSunnah = 0; let totalPuasa = 0; let totalSedekah = 0; let totalTarawih = 0; for(let i=1; i<=30; i++){ const d = state.dailyHabits[`day${i}`]; if(d) { if(d.filter(x=>x.category==='Shalat Wajib' && x.done).length === 5) totalWajib++; totalSunnah += d.filter(x=>x.category==='Sholat Sunnah' && x.done).length; if(d.find(x=>x.id==='fasting' && x.done)) totalPuasa++; if(d.find(x=>x.name==='Sedekah' && x.done)) totalSedekah++; if(d.find(x=>x.name==='Tarawih' && x.done)) totalTarawih++; } } const wajibPct = Math.round((totalWajib / state.activeDay) * 100) || 0; wajibContainer.className = "block w-full"; wajibContainer.innerHTML = `<div class="mb-1 flex justify-between"><span class="sc-stat-label">SHOLAT 5 WAKTU (FULL)</span><span class="sc-stat-val">${totalWajib} Hari</span></div><div class="sc-progress-track mb-3"><div class="sc-progress-fill bg-gradient-to-r from-emerald-500 to-green-400" style="width: ${wajibPct}%"></div></div><div class="mb-1 flex justify-between"><span class="sc-stat-label">TOTAL PUASA</span><span class="sc-stat-val">${totalPuasa} Hari</span></div><div class="sc-progress-track"><div class="sc-progress-fill bg-gradient-to-r from-blue-500 to-indigo-400" style="width: ${Math.round((totalPuasa/state.activeDay)*100)||0}%"></div></div>`; sunnahContainer.innerHTML = `<div class="sc-list-item done w-full justify-between"><span class="sc-list-text">Total Sunnah</span><span class="text-white font-bold">${totalSunnah}x</span></div><div class="sc-list-item done w-full justify-between"><span class="sc-list-text">Tarawih</span><span class="text-white font-bold">${totalTarawih}x</span></div>`; ramaContainer.innerHTML = `<div class="sc-list-item done w-full justify-between"><span class="sc-list-text">Sedekah</span><span class="text-white font-bold">${totalSedekah}x</span></div><div class="sc-list-item done w-full justify-between"><span class="sc-list-text">Hari Aktif</span><span class="text-white font-bold">${state.activeDay} Hari</span></div>`; const juzCount = state.juzLog.filter(x=>x).length; const juzPct = Math.min(Math.round((juzCount/30)*100), 100); let quranPageCount = 0; state.quranLog.forEach(d => d.forEach(p => { if(p) quranPageCount++ })); progressContainer.innerHTML = `<div><div class="sc-stat-row"><span class="sc-stat-label">KHATAM QURAN (${juzCount}/30 JUZ)</span><span class="sc-stat-val">${juzPct}%</span></div><div class="sc-progress-track"><div class="sc-progress-fill" style="width: ${juzPct}%"></div></div></div><div><div class="sc-stat-row"><span class="sc-stat-label">TOTAL HALAMAN DIBACA</span><span class="sc-stat-val">${quranPageCount} Hal</span></div><div class="sc-progress-track"><div class="sc-progress-fill bg-purple-500" style="width: ${Math.min(Math.round((quranPageCount/604)*100),100)}%"></div></div></div>`; } const el = document.getElementById('share-card-template'); Swal.fire({title:'Memproses...',didOpen:()=>{Swal.showLoading()}, background:'#020617', color:'#fff'}); setTimeout(() => { html2canvas(el, { scale: 3, backgroundColor: null, useCORS: true, allowTaint: true }).then(c=>{ Swal.close(); Swal.fire({ title: 'Rapor Siap!', imageUrl: c.toDataURL("image/png"), imageAlt: 'Rapor', imageWidth: 300, showConfirmButton: true, confirmButtonText: 'Tutup', showDenyButton: true, denyButtonText: 'Download', background: '#020617', color: '#fff', confirmButtonColor: '#a855f7' }).then((result) => { if (result.isDenied) { const link = document.createElement('a'); const reportType = type === 'daily' ? 'Harian' : 'Bulanan'; const reportDay = type === 'daily' ? `-Hari-${state.activeDay}` : ''; link.download = `Amalin-Rapor-${reportType}${reportDay}.png`; link.href = c.toDataURL("image/png"); link.click(); } }); }).catch(e=>Swal.fire({title:'Gagal',text:''+e,icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'})); }, 500); }
+    function addShareListItem(c, l, v, g) { c.innerHTML+=`<div class="sc-list-item ${g?'done':''} w-full justify-between"><span class="sc-list-text">${l}</span><div class="flex items-center gap-1.5"><span class="text-[10px] font-bold ${g?'text-white':'text-slate-500'}">${v}</span><div class="w-4 h-4 rounded-full flex items-center justify-center ${g?'bg-emerald-500 text-white':'bg-slate-700 text-slate-500'}"><span class="sc-check-icon">✓</span></div></div></div>`; }
+    function getQuranProgressText(d) { if(state.manualLog.length>0 && new Date(state.manualLog[0].timestamp).getDate() === new Date().getDate()) return `${state.manualLog[0].endSurah}:${state.manualLog[0].endAyat}`; if(state.juzLog[d-1]) return `Juz ${d} Selesai`; const p=state.quranLog[d-1]?.filter(x=>x).length||0; if(p>0) return `${p} Halaman Tuntas`; return "Belum Ada Bacaan"; }
+    function fetchPrayerTimesCity(c) { fetch(`https://api.aladhan.com/v1/timingsByCity?city=${c}&country=Indonesia&method=11`).then(r=>r.json()).then(d=>{state.prayerTimes=d.data.timings; updatePTUI(); document.getElementById('current-location-display').innerText=c; updateSmartSuhoor(state.prayerTimes.Fajr);}); }
+    function fetchPrayerTimes(lat,lon) { fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`).then(r=>r.json()).then(d=>{state.prayerTimes=d.data.timings; updatePTUI(); fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`).then(r=>r.json()).then(l=>{const cityName = l.address.city||l.address.town||l.address.village||"Lokasi Terdeteksi"; document.getElementById('current-location-display').innerText=cityName; state.lastLocation = { lat, lon, city: cityName }; localStorage.setItem('ram_last_location', JSON.stringify(state.lastLocation)); }).catch(() => { document.getElementById('current-location-display').innerText="Koordinat: " + lat.toFixed(2) + ", " + lon.toFixed(2); }); updateSmartSuhoor(state.prayerTimes.Fajr); }); }
+    function updatePTUI() { if(!state.prayerTimes)return; ['Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(p=>{document.getElementById(`time-${p==='Dhuhr'?'dhuhr-val':p.toLowerCase()}`).innerText=state.prayerTimes[p];}); initCountdown(); }
+    function detectLocation(retryCount = 0) { const btn = document.getElementById('btn-refresh-location'); if (!btn) return; const icon = btn.querySelector('svg') || btn.querySelector('i'); const label = document.getElementById('current-location-display'); if (icon) icon.classList.add('animate-spin'); if (label) label.innerText = retryCount > 0 ? `Mencoba Ulang (${retryCount})...` : "Mencari Lokasi..."; if (!navigator.geolocation) { handleLocationError({ code: 0, message: "Browser tidak mendukung Geolocation" }); if (icon) icon.classList.remove('animate-spin'); return; } navigator.geolocation.getCurrentPosition( (p) => { fetchPrayerTimes(p.coords.latitude, p.coords.longitude); if (icon) setTimeout(() => icon.classList.remove('animate-spin'), 1000); }, (error) => { if (retryCount < 2 && error.code !== error.PERMISSION_DENIED) { setTimeout(() => detectLocation(retryCount + 1), 2000); } else { handleLocationError(error); if (icon) icon.classList.remove('animate-spin'); } }, { maximumAge: 0, timeout: 10000, enableHighAccuracy: true } ); }
+    function handleLocationError(error) { const label = document.getElementById('current-location-display'); if(state.lastLocation) { fetchPrayerTimes(state.lastLocation.lat, state.lastLocation.lon); if(label) label.innerText = state.lastLocation.city + " (Offline)"; Swal.fire({ icon: 'info', title: 'Mode Offline', text: 'Menggunakan lokasi terakhir yang tersimpan.', background:'#020617', color:'#fff', confirmButtonColor: '#a855f7' }); return; } fetchPrayerTimesCity("Jakarta"); if (label) label.innerText = "Jakarta (Default)"; let msg = "Gagal mendeteksi lokasi."; if (error.code === 1) msg = "Izin lokasi ditolak. Mohon aktifkan izin di pengaturan browser antum."; else if (error.code === 2) msg = "GPS tidak terdeteksi. Pastikan lokasi aktif."; else if (error.code === 3) msg = "Waktu habis. Koneksi internet mungkin lambat."; Swal.fire({ icon: 'warning', title: 'Lokasi Gagal', text: msg, background: '#020617', color: '#fff', confirmButtonText: 'Coba Manual', confirmButtonColor: '#a855f7' }); }
+    function updateSmartSuhoor(t) { if(!t)return; const [h,m]=t.split(':').map(Number); const d=new Date(); d.setHours(h,m,0,0); const best=new Date(d.getTime()-45*60000), imsak=new Date(d.getTime()-10*60000); const f=x=>x.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); document.getElementById('smart-suhoor-text').innerHTML=`Sahur: <span class="text-emerald-400">${f(best)}</span> - <span class="text-purple-400">${f(imsak)}</span>`; }
+    function initCountdown() { setInterval(()=>{ if(!state.prayerTimes)return; const now=new Date(); const iftar=parseTimeStr(state.prayerTimes.Maghrib), imsak=parseTimeStr(state.prayerTimes.Fajr); const timeNowStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); if(timeNowStr === "00:00") state.notifiedPrayers = []; ['Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(p => { if(state.prayerTimes[p] === timeNowStr && state.adzanSettings.active[p] && !state.notifiedPrayers.includes(p)) { state.notifiedPrayers.push(p); if(state.adzanSettings.notificationEnabled && Notification.permission === "granted") { new Notification("Waktunya Sholat!", { body: `Saatnya menunaikan sholat ${p} (${state.prayerTimes[p]})`, icon: "https://cdn.jsdelivr.net/gh/twbs/icons@main/icons/moon-stars-fill.svg", requireInteraction: true }); } Swal.fire({ title: 'Waktunya Sholat!', text: `Saatnya menunaikan sholat ${p}`, icon: 'info', background: '#020617', color: '#fff', confirmButtonColor: '#a855f7', timer: 10000 }); if(state.adzanSettings.soundEnabled) { const audio = document.getElementById('adzan-audio'); if(audio) { audio.currentTime = 0; if(state.audioAllowed) { audio.play().catch(e => { console.log("Audio play failed despite unlock state", e); }); } else { const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, background: '#020617', color: '#fff' }); toast.fire({ icon: 'info', title: 'Adzan Mute (Klik Layar)' }); } } } } }); if(!iftar||!imsak)return; let t,l; if(now>imsak && now<iftar){t=iftar;l="MENUJU BUKA PUASA";}else{l="MENUJU IMSAK";t=(now>iftar)?new Date(imsak.getTime()+86400000):imsak;} const d=t-now; if(d>0){const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000); document.getElementById('countdown-label').innerText=l; document.getElementById('countdown-timer').innerText=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;} },1000); }
+    function runBackgroundSystem() { if(state.gsUrl && localStorage.getItem('khodim_pending_reg')){ fetch(state.gsUrl,{method:'POST',body:JSON.stringify({action:'register_backup',data:{userDB:JSON.parse(localStorage.getItem('khodim_pending_reg'))}})}).then(r=>r.json()).then(d=>{if(d.status==='success')localStorage.removeItem('khodim_pending_reg')}); } }
+    function saveCloudUrl() { const u=document.getElementById('cfg-gs-url').value; state.gsUrl=u; localStorage.setItem('khodim_gs_url',u); Swal.fire({title:'Tersimpan', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); }
+    function copyBackendScript() { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(BACKEND_SCRIPT_CODE).then(() => { Swal.fire({title:'Script backend berhasil disalin', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7', timer: 1500, showConfirmButton: false}); }).catch(err => { fallbackCopyText(BACKEND_SCRIPT_CODE); }); } else { fallbackCopyText(BACKEND_SCRIPT_CODE); } }
+    function fallbackCopyText(text) { const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); Swal.fire({title:'Script backend berhasil disalin', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7', timer: 1500, showConfirmButton: false}); } catch (err) { Swal.fire({title:'Gagal menyalin', text:'Silakan salin manual', icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); } document.body.removeChild(textArea); }
+    function testGASConnection() { if(!state.gsUrl)return Swal.fire({title:'URL Kosong', icon:'warning', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); fetch(state.gsUrl,{method:'POST',body:JSON.stringify({action:'ping'})}).then(r=>r.json()).then(d=>{if(d.status==='success')Swal.fire({title:'Terkoneksi', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});else Swal.fire({title:'Gagal',text:d.message,icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'})}).catch(e=>Swal.fire({title:'Error',text:''+e,icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'})); }
+    async function syncToCloud() { if(!state.gsUrl)return Swal.fire({title:'URL Kosong', icon:'warning', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); Swal.fire({title:'Upload...',didOpen:()=>Swal.showLoading(), background:'#020617', color:'#fff'}); try{ await fetch(state.gsUrl,{method:'POST',body:JSON.stringify({action:'save_data',user_id:state.user.name,data:state})}); Swal.fire({title:'Berhasil', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); }catch(e){Swal.fire({title:'Error',text:''+e,icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});} }
+    async function syncFromCloud() { if(!state.gsUrl)return Swal.fire({title:'URL Kosong', icon:'warning', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); Swal.fire({title:'Download...',didOpen:()=>Swal.showLoading(), background:'#020617', color:'#fff'}); try{ const r=await fetch(state.gsUrl,{method:'POST',body:JSON.stringify({action:'load_data',user_id:state.user.name})}); const d=await r.json(); if(d.status==='success' && d.data) { Object.assign(state, d.data); saveDailyData(); updateUI(); Swal.fire({title:'Berhasil', icon:'success', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); } else Swal.fire({title:'Info',text:'Data kosong',icon:'info', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'}); }catch(e){Swal.fire({title:'Error',text:''+e,icon:'error', background:'#020617', color:'#fff', confirmButtonColor:'#a855f7'});} }
+    function changeAvatar() { document.getElementById('avatar-upload-input').click(); }
+    function handleImageUpload(e) { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(ev)=>{state.profile.avatar=ev.target.result; document.getElementById('user-avatar').src=ev.target.result; saveDailyData();}; r.readAsDataURL(f); } }
+    
+    window.onload = () => { lucide.createIcons(); initUser(); };
+  </script>
+</body>
+</html>
